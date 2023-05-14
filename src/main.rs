@@ -1,9 +1,13 @@
-mod num;
-mod vbo;
-mod lig;
-mod opr;
-mod sta;
+mod bag;
+mod helpers;
 
+use bag::{
+  sta,
+  opr,
+  num,
+  vbo,
+  lig
+};
 use serde::{Serialize};
 use std::fs;
 use quick_xml::{de::from_str};
