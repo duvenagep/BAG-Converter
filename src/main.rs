@@ -7,7 +7,8 @@ use bag::{
   num,
   vbo,
   lig,
-  wpl
+  wpl,
+  pnd
 };
 use serde::{Serialize};
 use std::fs;
@@ -20,12 +21,29 @@ fn main(){
 
     // Code block to measure.
     {
-      parse_wpl()
+      parse_pnd()
     }
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.4?}", elapsed);
     
+}
+
+
+pub fn parse_pnd() {
+  let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/test_xmls/9999PND08112022-000001.xml";
+  let content = fs::read_to_string(&path).expect("Something went wrong with the file");
+  
+  let bag_xml: pnd::BagStand = from_str(&content).unwrap();
+  // println!("{:?}",bag_xml);
+
+  let result =  bag_xml.stand_bestand.stand;
+  println!("{:?}", result.last());
+
+
+  // for elements in result {
+  //     println!("{:?}",elements.bag_object.standplaats.geometrie);
+  // }
 }
 
 
