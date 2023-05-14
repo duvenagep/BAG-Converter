@@ -1,5 +1,6 @@
 mod num;
 mod vbo;
+mod lig;
 
 use serde::{Serialize};
 use std::fs;
@@ -12,13 +13,49 @@ fn main(){
 
     // Code block to measure.
     {
-      parse_vbo()
+      parse_lig()
     }
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.4?}", elapsed);
     
 }
+
+pub fn parse_lig() {
+  let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/lvbag-extract-nl/9999LIG08112022/9999LIG08112022-000001.xml";
+  let content = fs::read_to_string(&path).expect("Something went wrong with the file");
+  
+  let bag_xml: lig::BagStand = from_str(&content).unwrap();
+  println!("{:?}",bag_xml);
+
+  // let result =  bag_xml.stand_bestand.stand;
+  // // println!("{:?}", result);
+
+
+  // for elements in result {
+  //     println!("{:?}",elements.bag_object.ligplaats.geometrie);
+  // }
+
+//   for elements in result {
+//     let vbo = BagVerblijfsobject { 
+//         nummeraanduidingref: elements.bag_object.verblijfsobject.heeftalshoofdadres.nummeraanduidingref,
+//         identificatie: "None".to_string(),
+//         gebruiksdoel: elements.bag_object.verblijfsobject.gebruiksdoel[0].to_string(), 
+//         oppervlakte: elements.bag_object.verblijfsobject.oppervlakte, 
+//         status: elements.bag_object.verblijfsobject.status, 
+//         geconstateerd: elements.bag_object.verblijfsobject.geconstateerd, 
+//         documentdatum: elements.bag_object.verblijfsobject.documentdatum, 
+//         documentnummer: elements.bag_object.verblijfsobject.documentnummer, 
+//         pandref: elements.bag_object.verblijfsobject.maaktdeelditvan.pandref[0].to_string(), 
+//         latitude: parse_coords(elements.bag_object.verblijfsobject.geometrie.punt.attributes.pos)[0], 
+//         longitude: 32.0,
+//     };
+//     println!("{:?}",vbo);
+// }
+}
+
+
+
 
 pub fn parse_vbo() {
     let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/9999VBO08112022-000001.xml";
@@ -30,18 +67,9 @@ pub fn parse_vbo() {
     // println!("{:?}", result.last());
 
 
-    
-
     for elements in result {
         println!("{:?}",elements.bag_object.verblijfsobject.geometrie);
     }
-
-
-
-
-
-
-
 
   //   for elements in result {
   //     let vbo = BagVerblijfsobject { 
@@ -60,8 +88,6 @@ pub fn parse_vbo() {
   //     println!("{:?}",vbo);
   // }
 }
-
-
 
 pub fn parse_num() {
     let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/full.xml";

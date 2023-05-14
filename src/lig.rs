@@ -30,61 +30,85 @@ pub struct ObjectTypen {
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Stand {
-  #[serde(rename = "bagObject",)]
+  #[serde(rename = "bagObject")]
   pub bag_object: BagObject
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct BagObject {
-  #[serde(rename = "Verblijfsobject")]
-  pub verblijfsobject: Verblijfsobject
+  #[serde(rename = "Ligplaats")]
+  pub ligplaats: Ligplaats
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct Verblijfsobject {
+pub struct Ligplaats {
   #[serde(rename = "heeftAlsHoofdadres")]
   pub heeftalshoofdadres: HeeftAlsHoofdadres,
+  pub voorkomen: Voorkomen,
   pub identificatie: Identity,
   pub geometrie: Geometrie,
-  pub gebruiksdoel: Vec<String>,
-  pub oppervlakte: Option<String>,
   pub status: String,
   pub geconstateerd: String,
   pub documentdatum: String,
   pub documentnummer: String,
-  #[serde(rename = "maaktDeelUitVan")]
-  pub maaktdeelditvan: MaaktDeelUitVan
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct Voorkomen {
+  #[serde(rename = "Voorkomen")]
+  pub voorkomen: VoorkomenContent
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct VoorkomenContent {
+  pub voorkomenidentificatie: String,
+  #[serde(rename = "beginGeldigheid")]
+  pub begingeldigheid: String,
+  #[serde(rename = "tijdstipRegistratie")]
+  pub tijdstipregistratie: String,
+  #[serde(rename = "BeschikbaarLV")]
+  pub beschikbaar_lv: BeschikbaarLV,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct BeschikbaarLV {
+  #[serde(rename = "tijdstipRegistratieLV")]
+  pub tijdstipregistratie_lv: String
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct HeeftAlsHoofdadres {
+  #[serde(rename = "NummeraanduidingRef")]
+  pub nummeraanduidingref: NummeraanduidingRef
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct NummeraanduidingRef {
+  #[serde(rename = "@domein")]
+  pub domein: String,
+  #[serde(rename = "$value")]
+  pub nummeraanduidingref: String
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Identity {
   #[serde(rename = "@domein")]
   pub domein: String,
+  #[serde(rename = "$value")]
   pub identificatie: String,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct MaaktDeelUitVan {
-  #[serde(rename = "PandRef")]
-  pub pandref: Vec<String>
-}
-
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct HeeftAlsHoofdadres {
-  #[serde(rename = "NummeraanduidingRef")]
-  pub nummeraanduidingref: String
-}
-
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Geometrie {
-  pub punt: Point
-}
-
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct Point {
-  #[serde(rename = "Point")]
+  #[serde(rename = "Polygon")]
   pub attributes: Attrs,
 }
+
+// #[derive(Debug, Deserialize, PartialEq, Serialize)]
+// pub struct Polygon {
+//   #[serde(rename = "Polygon")]
+//   pub attributes: Attrs,
+// }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Attrs {
@@ -93,11 +117,24 @@ pub struct Attrs {
   pub srs_name: String,
   #[serde(rename = "@srsDimension")]
   pub srs_dimension: i8,
-  #[serde(deserialize_with = "deserialize_pos")]
-  pub pos: Vec<f32>
+  pub exterior: Exterior
 }
 
-fn deserialize_pos<'de, D>(deserializer: D) -> Result<Vec<f32>, D::Error>
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct Exterior {
+  #[serde(rename = "LinearRing")]
+  pub linear_ring: LinearRing,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct LinearRing {
+  #[serde(deserialize_with = "deserialize_pos")]
+  #[serde(rename = "posList")]
+  pub pos_list: Vec<f32>,
+}
+
+
+pub fn deserialize_pos<'de, D>(deserializer: D) -> Result<Vec<f32>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -111,7 +148,7 @@ where
     Ok(values)
 }
 
-fn deserialize_epsg<'de, D>(deserializer: D) -> Result<String, D::Error>
+pub fn deserialize_epsg<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
