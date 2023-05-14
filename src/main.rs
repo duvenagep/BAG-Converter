@@ -2,6 +2,7 @@ mod num;
 mod vbo;
 mod lig;
 mod opr;
+mod sta;
 
 use serde::{Serialize};
 use std::fs;
@@ -14,7 +15,7 @@ fn main(){
 
     // Code block to measure.
     {
-      parse_opr()
+      parse_sta()
     }
 
     let elapsed = now.elapsed();
@@ -22,6 +23,22 @@ fn main(){
     
 }
 
+
+pub fn parse_sta() {
+  let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/lvbag-extract-nl/9999STA08112022/9999STA08112022-000001.xml";
+  let content = fs::read_to_string(&path).expect("Something went wrong with the file");
+  
+  let bag_xml: sta::BagStand = from_str(&content).unwrap();
+  // println!("{:?}",bag_xml);
+
+  let result =  bag_xml.stand_bestand.stand;
+  // println!("{:?}", result.last());
+
+
+  for elements in result {
+      println!("{:?}",elements.bag_object.standplaats.geometrie);
+  }
+}
 
 pub fn parse_opr() {
   let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/lvbag-extract-nl/9999OPR08112022/9999OPR08112022-000001.xml";
@@ -54,7 +71,6 @@ pub fn parse_lig() {
   //     println!("{:?}",elements.bag_object.ligplaats.geometrie);
   // }
 }
-
 
 pub fn parse_vbo() {
     let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/9999VBO08112022-000001.xml";
@@ -150,22 +166,6 @@ struct BagVerblijfsobject {
     // pub latitude: f32,
     // pub longitude: f32
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #[test]
