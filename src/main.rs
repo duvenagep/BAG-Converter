@@ -10,18 +10,50 @@ use bag::{
   wpl,
   pnd
 };
-use serde::{Serialize};
+use serde::Serialize;
 use std::fs;
-use quick_xml::{de::from_str};
+use quick_xml::de::from_str;
+use std::io::{Read, Cursor};
+use zip::{ZipArchive, result::ZipError};
 
 
 fn main(){
+
+    // let zip_file = fs::File::open(&zip_path).unwrap();
+    // let mut archive = zip::ZipArchive::new(&zip_file).unwrap();
+
+    // for i in 0..archive.len() {
+    //     let file_entry:ZipFile = archive.by_index(i).unwrap();
+    //     let file_name = file_entry.enclosed_name().unwrap();
+
+    //     let str_file_name:String = match file_entry.enclosed_name() {
+    //         Some(path) => path.to_owned().display().to_string(),
+    //         None => continue
+    //     };
+
+    //     // println!("{}", &str_file_name);
+
+    //     if str_file_name.contains("NUM") {
+    //       println!("THIS IS WHERE THE FILE SHOULD BE PRINTED{}", &str_file_name);
+    //       let nested_zip_file = archive.by_name(&str_file_name).unwrap();
+    //       let mut nested_archive = zip::ZipArchive::new(nested_zip_file).unwrap();
+
+    //       for i in 0..nested_archive.len() {
+    //         let nested_file_entry:ZipFile = nested_archive.by_index(i).unwrap();
+    //         let nested_file_name = nested_file_entry.enclosed_name().unwrap();
+    //         println!("{:?}", &nested_file_name);
+    //       }
+    //     }
+    // }
+
     use std::time::Instant;
     let now = Instant::now();
 
     // Code block to measure.
     {
-      parse_pnd()
+      if let Err(e) = run() {
+        eprintln!("Error: {:?}", e);
+    }
     }
 
     let elapsed = now.elapsed();
@@ -29,6 +61,30 @@ fn main(){
     
 }
 
+
+fn run() -> Result<(), ZipError> {
+
+  let zip_path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/lvbag-extract-nl.zip";
+  // Open the outer zip file
+  let mut outer_zip = ZipArchive::new(fs::File::open(&zip_path).unwrap())?;
+
+  // Open the nested zip file
+  let mut nested_zip_file = outer_zip.by_name("9999NUM08112022.zip").unwrap();
+  let mut contents = vec![];
+  nested_zip_file.read_to_end(&mut contents).unwrap();
+  let mut nested_zip = ZipArchive::new(Cursor::new(contents)).unwrap();
+
+  // Open the XML file within the nested zip file
+  let mut xml_file = nested_zip.by_name("9999NUM08112022-000001.xml").unwrap();
+  let mut xml_contents = String::new();
+  xml_file.read_to_string(&mut xml_contents).unwrap();
+
+  // Print the file contents
+  // println!("{}", xml_contents);
+  parse_num(&xml_contents);
+
+  Ok(())
+}
 
 pub fn parse_pnd() {
   let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/test_xmls/9999PND08112022-000001.xml";
@@ -144,11 +200,11 @@ pub fn parse_vbo() {
   // }
 }
 
-pub fn parse_num() {
-    let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/full.xml";
-    let content = fs::read_to_string(&path).expect("Something went wrong with the file");
+pub fn parse_num(xml_c:&str) {
+    // let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/test_xmls/full.xml";
+    // let content = fs::read_to_string(&path).expect("Something went wrong with the file");
 
-    let bag_xml: num::BagStand = from_str(&content).unwrap();
+    let bag_xml: num::BagStand = from_str(&xml_c).unwrap();
     
     let results = bag_xml.stand_bestand.stand;
     println!("{:?}", results.len());
