@@ -1,23 +1,89 @@
 mod bag;
 mod helpers;
+mod args;
+mod work_dir;
 
-use bag::{
-  sta,
-  opr,
-  num,
-  vbo,
-  lig,
-  wpl,
-  pnd
-};
-use serde::Serialize;
 use std::fs;
-use quick_xml::de::from_str;
+use std::time::Instant;
 use std::io::{Read, Cursor};
+use clap::Parser;
+use quick_xml::de::from_str;
+use serde::Serialize;
 use zip::{ZipArchive, result::ZipError};
+use args::{NLExtractArgs, EntityType, LVBAGSubCommand, BagObjects};
+use work_dir::new_folder;
+use bag::{sta,opr,num,vbo,lig,wpl,pnd};
+
 
 
 fn main(){
+
+  let now = Instant::now();
+  let cli = NLExtractArgs::parse();
+  println!("{:?}", cli);
+
+  
+  match cli.entity_type {
+        EntityType::LVBAG(c) => match c.command {
+
+            LVBAGSubCommand::Download(u) => {
+                let url = u.url;
+                let workdir = u.destination_folder;
+
+                println!("URL: {}", &url);
+                println!("Destination folder: {}", &workdir);
+
+                let _temp_folder = new_folder(&workdir);
+            }
+
+            LVBAGSubCommand::Parse(p) => {
+                let _i = p.info;
+                match p.bag_object {
+
+                    BagObjects::ALL => {
+
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::ALL);
+                    }
+
+                    BagObjects::LIG => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::LIG);
+                    }
+
+                    BagObjects::NUM => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::NUM);
+                      if let Err(e) = run() {
+                        eprintln!("Error: {:?}", e);
+                      }
+                    }
+
+                    BagObjects::OPR => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::OPR);
+                    }
+
+                    BagObjects::VBO => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::VBO);
+                    }
+
+                    BagObjects::PND => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::PND);
+                    }
+
+                    BagObjects::WPL => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::WPL);
+                    }
+
+                    BagObjects::STA => {
+                      println!("Parse {:?} objects in LVBAG XML Extract", BagObjects::STA);
+                    }
+                }
+            }
+        _ => todo!()
+            
+        }
+  }
+  
+  let elapsed = now.elapsed();
+  println!("Elapsed: {:.4?}", elapsed);
 
     // let zip_file = fs::File::open(&zip_path).unwrap();
     // let mut archive = zip::ZipArchive::new(&zip_file).unwrap();
@@ -46,18 +112,6 @@ fn main(){
     //     }
     // }
 
-    use std::time::Instant;
-    let now = Instant::now();
-
-    // Code block to measure.
-    {
-      if let Err(e) = run() {
-        eprintln!("Error: {:?}", e);
-    }
-    }
-
-    let elapsed = now.elapsed();
-    println!("Elapsed: {:.4?}", elapsed);
     
 }
 
@@ -69,15 +123,15 @@ fn run() -> Result<(), ZipError> {
   let mut outer_zip = ZipArchive::new(fs::File::open(&zip_path).unwrap())?;
 
   // Open the nested zip file
-  let mut nested_zip_file = outer_zip.by_name("9999NUM08112022.zip").unwrap();
+  let mut nested_zip_file = outer_zip.by_name("9999NUM08112022.zip")?;
   let mut contents = vec![];
-  nested_zip_file.read_to_end(&mut contents).unwrap();
-  let mut nested_zip = ZipArchive::new(Cursor::new(contents)).unwrap();
+  nested_zip_file.read_to_end(&mut contents)?;
+  let mut nested_zip = ZipArchive::new(Cursor::new(contents))?;
 
   // Open the XML file within the nested zip file
-  let mut xml_file = nested_zip.by_name("9999NUM08112022-000001.xml").unwrap();
+  let mut xml_file = nested_zip.by_name("9999NUM08112022-000001.xml")?;
   let mut xml_contents = String::new();
-  xml_file.read_to_string(&mut xml_contents).unwrap();
+  xml_file.read_to_string(&mut xml_contents)?;
 
   // Print the file contents
   // println!("{}", xml_contents);
@@ -95,11 +149,6 @@ pub fn parse_pnd() {
 
   let result =  bag_xml.stand_bestand.stand;
   println!("{:?}", result.last());
-
-
-  // for elements in result {
-  //     println!("{:?}",elements.bag_object.standplaats.geometrie);
-  // }
 }
 
 
@@ -109,14 +158,6 @@ pub fn parse_wpl() {
   
   let bag_xml: wpl::BagStand = from_str(&content).unwrap();
   println!("{:?}",bag_xml);
-
-  // let result =  bag_xml.stand_bestand.stand;
-  // println!("{:?}", result.last());
-
-
-  // for elements in result {
-  //     println!("{:?}",elements.bag_object.standplaats.geometrie);
-  // }
 }
 
 
@@ -201,8 +242,6 @@ pub fn parse_vbo() {
 }
 
 pub fn parse_num(xml_c:&str) {
-    // let path = "/Users/paulduvenage/Documents/Rust_Development/Experiments/quick_xml_parse/src/test_xmls/full.xml";
-    // let content = fs::read_to_string(&path).expect("Something went wrong with the file");
 
     let bag_xml: num::BagStand = from_str(&xml_c).unwrap();
     
