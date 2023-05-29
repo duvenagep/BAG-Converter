@@ -1,5 +1,5 @@
 use serde::{Serialize,Deserialize};
-use crate::helpers::helpers::{deserialize_epsg,deserialize_pos};
+use crate::helpers::deserializers::{deserialize_epsg,deserialize_pos};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct BagStand {
