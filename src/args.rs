@@ -69,9 +69,12 @@ pub struct ParseLvbag {
     pub info: Option<bool>,
 
     /// List of BAG objects that are Parsable
-    /// Bag Objects consist of the following
     #[arg(short, value_enum)]
     pub bag_object: BagObjects,
+
+    /// Bag file to be parsed (eq. lvbag-extract-nl.zip)
+    #[arg(short = 'l')]
+    pub file: String,
 
     /// Supported Parse formats for LVBAG XML (POSTGIS, DSV, GEOJSON)
     #[arg(short, default_value = "CSV")]
