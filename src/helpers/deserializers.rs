@@ -1,6 +1,5 @@
+use geo::{LineString, Point, Polygon};
 use serde::Deserialize;
-use geo::{Point, LineString, Polygon};
-use proj::Proj;
 
 pub fn deserialize_pos<'de, D>(deserializer: D) -> Result<Point, D::Error>
 where
@@ -8,9 +7,9 @@ where
 {
     let coordinates = String::deserialize(deserializer)?;
     let values: Vec<f64> = coordinates
-                        .split_whitespace()
-                        .map(|coord| coord.parse::<f64>().unwrap())
-                        .collect();
+        .split_whitespace()
+        .map(|coord| coord.parse::<f64>().unwrap())
+        .collect();
 
     let vbo_point = Point::new(values[0], values[1]);
 
@@ -29,12 +28,9 @@ where
 {
     let coordinates = String::deserialize(deserializer)?;
     let values: Vec<f64> = coordinates
-                        .split_whitespace()
-                        .map(|coord| coord.parse::<f64>().unwrap())
-                        .collect();
-
-
-
+        .split_whitespace()
+        .map(|coord| coord.parse::<f64>().unwrap())
+        .collect();
 
     // let values: Vec<(f64, f64)> = coordinates
     //                     .split_whitespace()

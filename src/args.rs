@@ -61,9 +61,9 @@ pub struct ParseLvbag {
     #[arg(short)]
     pub info: Option<bool>,
 
-    /// List of BAG objects that are Parsable
-    #[arg(short, value_enum)]
-    pub bag_object: BagObjects,
+    /// List of BAG objects that are Parsable,num_args = 0.., value_delimiter = ',', use_value_delimiter=true
+    #[arg(short = 'b', value_enum, num_args = 0..=7)]
+    pub bag_object: Option<Vec<BagObjects>>,
 
     /// Bag file to be parsed (eq. lvbag-extract-nl.zip)
     #[arg(short = 'l')]
@@ -86,9 +86,8 @@ pub struct ParseLvbag {
     pub exclude_columns: Option<Vec<String>>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, ValueEnum)]
 pub enum BagObjects {
-    ALL,
     VBO,
     OPR,
     WPL,

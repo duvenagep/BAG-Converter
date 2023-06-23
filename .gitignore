@@ -1,6 +1,7 @@
 /target
 lvbag-extract-nl
 *.zip
+*.csv
 *.xml
 *.vscode
 *.DS_Store

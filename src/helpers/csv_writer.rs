@@ -26,3 +26,17 @@ fn main() -> Result<(), csv::Error> {
 pub fn csv_output(object: BagObject){
     todo
 }
+
+
+fn serialize_to_csv(data: &[MyData], csv_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let file = File::create(csv_path)?;
+    let mut writer = Writer::from_writer(file);
+
+    for item in data {
+        writer.serialize(item)?;
+    }
+
+    writer.flush()?;
+    Ok(())
+}
+
