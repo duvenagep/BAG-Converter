@@ -1,9 +1,10 @@
+use crate::bag::{lig, num, opr, pnd, sta, vbo, wpl};
 use csv::Writer;
 use std::io::Cursor;
 use std::io::Read;
 use zip::read::ZipArchive;
 
-use crate::helpers::parsers::parse_num;
+// use crate::helpers::parsers::{parse_bag_stand, parse_num};
 
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -44,24 +45,30 @@ pub fn read_nested_zip(file_path: &str) -> zip::result::ZipResult<()> {
                 .progress_chars("##-"),
             );
 
+
             for j in 0..inner_zip.len() {
                 bar.inc(1);
 
                 let mut inner_file = inner_zip.by_index(j)?;
 
-                if inner_file.name().contains("NUM") {
-                    // println!(
-                    //     "File inside nested zip: {}",
-                    //     inner_file.name()
-                    // );
+                if inner_file.name().contains("NUM") && j == 0 {
                     let mut contents = String::new();
                     inner_file.read_to_string(&mut contents)?;
-                    parse_num(&contents);
+                    let bag_stand: Result<num::BagStand, quick_xml::de::DeError> =
+                            <num::BagStand as num::Parse>::parse(&contents);
+                        match bag_stand {
+                            Ok(parsed_bag_stand) => {
+                                println!("{:?}", parsed_bag_stand);
+                            }
+                            Err(error) => {
+                                println!("Error: {}", error);
+                            }
+                        }
                 }
+
+                bar.finish();
             }
-            bar.finish();
         }
     }
-
     Ok(())
 }

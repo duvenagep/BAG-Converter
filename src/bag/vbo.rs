@@ -1,6 +1,7 @@
 use crate::helpers::deserializers::{deserialize_epsg, deserialize_pos};
-use serde::{Deserialize, Serialize};
 use geo::Point;
+use quick_xml::de::from_str;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct BagStand {
@@ -98,4 +99,16 @@ pub struct Attrs {
     pub srs_dimension: i8,
     #[serde(deserialize_with = "deserialize_pos")]
     pub pos: Point,
+}
+
+pub trait Parse {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError>
+    where
+        Self: Sized;
+}
+
+impl Parse for BagStand {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError> {
+        from_str(xml_str)
+    }
 }

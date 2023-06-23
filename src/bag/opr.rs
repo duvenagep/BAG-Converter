@@ -1,3 +1,4 @@
+use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -98,4 +99,16 @@ pub struct Identity {
     pub domein: String,
     #[serde(rename = "$value")]
     pub identificatie: String,
+}
+
+pub trait Parse {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError>
+    where
+        Self: Sized;
+}
+
+impl Parse for BagStand {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError> {
+        from_str(xml_str)
+    }
 }

@@ -1,4 +1,5 @@
 use crate::helpers::deserializers::{deserialize_epsg, deserialize_pos};
+use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -132,4 +133,16 @@ pub struct LinearRing {
     // #[serde(deserialize_with = "deserialize_pos")]
     #[serde(rename = "posList")]
     pub pos_list: Vec<f32>,
+}
+
+pub trait Parse {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError>
+    where
+        Self: Sized;
+}
+
+impl Parse for BagStand {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError> {
+        from_str(xml_str)
+    }
 }

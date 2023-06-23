@@ -1,7 +1,7 @@
 use csv::Writer;
 use quick_xml::de::from_str;
 use rayon::prelude::*;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use std::fs;
 use std::fs::OpenOptions;
 use std::sync::Mutex;
@@ -14,7 +14,7 @@ pub fn parse_pnd() {
 
     let bag_xml: pnd::BagStand = from_str(&content).unwrap();
 
-    let result =  bag_xml.stand_bestand.stand;
+    let result = bag_xml.stand_bestand.stand;
     println!("{:?}", result);
 }
 
@@ -24,7 +24,7 @@ pub fn parse_wpl() {
 
     let bag_xml: wpl::BagStand = from_str(&content).unwrap();
 
-    let result =  bag_xml.stand_bestand.stand;
+    let result = bag_xml.stand_bestand.stand;
     println!("{:?}", result);
 }
 
@@ -34,7 +34,7 @@ pub fn parse_sta() {
 
     let bag_xml: sta::BagStand = from_str(&content).unwrap();
 
-    let result =  bag_xml.stand_bestand.stand;
+    let result = bag_xml.stand_bestand.stand;
     println!("{:?}", result);
 }
 
@@ -44,7 +44,7 @@ pub fn parse_opr() {
 
     let bag_xml: opr::BagStand = from_str(&content).unwrap();
 
-    let result =  bag_xml.stand_bestand.stand;
+    let result = bag_xml.stand_bestand.stand;
     println!("{:?}", result);
 }
 
@@ -54,7 +54,7 @@ pub fn parse_lig() {
 
     let bag_xml: lig::BagStand = from_str(&content).unwrap();
 
-    let result =  bag_xml.stand_bestand.stand;
+    let result = bag_xml.stand_bestand.stand;
     println!("{:?}", result);
 }
 
@@ -64,7 +64,7 @@ pub fn parse_vbo() {
 
     let bag_xml: vbo::BagStand = from_str(&content).unwrap();
 
-    let result =  bag_xml.stand_bestand.stand;
+    let result = bag_xml.stand_bestand.stand;
     println!("{:?}", result);
 }
 
@@ -136,17 +136,12 @@ struct BagAddress {
     pub openbareruimteref: String,
 }
 
-#[derive(Debug, Serialize)]
-struct BagVerblijfsobject {
-    // pub nummeraanduidingref: String,
-    // pub identificatie: String,
-    // pub gebruiksdoel: String,
-    // pub oppervlakte: Option<String>,
-    // pub status: String,
-    pub geconstateerd: String,
-    // pub documentdatum: String,
-    // pub documentnummer: String,
-    // pub pandref: String,
-    // pub latitude: f32,
-    // pub longitude: f32
+use serde::de::DeserializeOwned;
+
+pub fn parse_bag_stand<T>(xml_c: &str) -> Result<T, Box<dyn std::error::Error>>
+where
+    T: DeserializeOwned,
+{
+    let parsed: T = from_str(xml_c)?;
+    Ok(parsed)
 }

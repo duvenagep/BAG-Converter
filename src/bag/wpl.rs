@@ -1,6 +1,6 @@
-use crate::helpers::deserializers::{deserialize_epsg, deserialize_coords};
+use crate::helpers::deserializers::{deserialize_coords, deserialize_epsg};
+use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
-use geo::Polygon;
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct BagStand {
@@ -137,4 +137,16 @@ pub struct LinearRing {
     #[serde(deserialize_with = "deserialize_coords")]
     #[serde(rename = "posList")]
     pub pos_list: Vec<f64>,
+}
+
+pub trait Parse {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError>
+    where
+        Self: Sized;
+}
+
+impl Parse for BagStand {
+    fn parse(xml_str: &str) -> Result<Self, quick_xml::de::DeError> {
+        from_str(xml_str)
+    }
 }
