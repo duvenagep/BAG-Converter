@@ -51,15 +51,15 @@ pub struct DownloadLvbag {
     pub url: String,
 
     /// destination_folder
-    #[arg(short)]
+    #[arg(short, default_value = "source_data")]
     pub destination_folder: String,
 }
 
 #[derive(Debug, Args)]
 pub struct ParseLvbag {
     /// Info about files in the BAG 2.0 Extract to Parse
-    #[arg(short)]
-    pub info: Option<bool>,
+    #[arg(short, long)]
+    pub info: bool,
 
     /// List of BAG objects that are Parsable,num_args = 0.., value_delimiter = ',', use_value_delimiter=true
     #[arg(short = 'b', value_enum, num_args = 0..=7)]

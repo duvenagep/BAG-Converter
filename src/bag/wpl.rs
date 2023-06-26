@@ -134,7 +134,7 @@ pub struct Exterior {
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct LinearRing {
-    #[serde(deserialize_with = "deserialize_coords")]
+    // #[serde(deserialize_with = "deserialize_coords")]
     #[serde(rename = "posList")]
     pub pos_list: Vec<f64>,
 }
