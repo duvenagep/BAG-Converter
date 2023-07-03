@@ -5,7 +5,7 @@ mod work_dir;
 
 use args::{BagObjects, EntityType, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
-use helpers::zip_seek::{read_nested_zip};
+use helpers::zip_seek::read_nested_zip;
 use std::collections::HashSet;
 use std::time::Instant;
 use work_dir::new_folder;
@@ -46,25 +46,25 @@ fn main() {
                                     let r = read_nested_zip(&path);
                                 }
                                 BagObjects::STA => {
-                                  println!("Parsing {:?}", l);
-                                  let r = read_nested_zip(&path);
-                              },
+                                    println!("Parsing {:?}", l);
+                                    let r = read_nested_zip(&path);
+                                }
                                 BagObjects::WPL => {
                                     println!("Parsing {:?}", l);
                                     let r = read_nested_zip(&path);
                                 }
                                 BagObjects::PND => {
-                                  println!("Parsing {:?}", l);
-                                  let r = read_nested_zip(&path);
-                              },
+                                    println!("Parsing {:?}", l);
+                                    let r = read_nested_zip(&path);
+                                }
                                 BagObjects::VBO => {
-                                  println!("Parsing {:?}", l);
-                                  let r = read_nested_zip(&path);
-                              },
+                                    println!("Parsing {:?}", l);
+                                    let r = read_nested_zip(&path);
+                                }
                                 BagObjects::OPR => {
-                                  println!("Parsing {:?}", l);
-                                  let r = read_nested_zip(&path);
-                              },
+                                    println!("Parsing {:?}", l);
+                                    let r = read_nested_zip(&path);
+                                }
                             }
                         }
                     }

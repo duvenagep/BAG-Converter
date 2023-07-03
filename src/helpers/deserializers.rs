@@ -1,4 +1,4 @@
-use geo::{Coord, Point, coord};
+use geo::{coord, Coord, LineString, Point, Polygon};
 use serde::Deserialize;
 
 pub fn deserialize_pos<'de, D>(deserializer: D) -> Result<Point, D::Error>
@@ -16,7 +16,7 @@ where
     Ok(vbo_point)
 }
 
-pub fn deserialize_coords<'de, D>(deserializer: D) -> Result<Vec<Coord>, D::Error>
+pub fn deserialize_coords<'de, D>(deserializer: D) -> Result<Polygon, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -30,7 +30,9 @@ where
         .map(|chunk| coord! { x:chunk[0], y:chunk[1]})
         .collect();
 
-    Ok(coords)
+    let polygon = Polygon::new(LineString::new(coords), vec![]);
+
+    Ok(polygon)
 }
 
 pub fn deserialize_epsg<'de, D>(deserializer: D) -> Result<String, D::Error>

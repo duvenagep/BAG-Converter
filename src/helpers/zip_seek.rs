@@ -2,7 +2,7 @@ use crate::bag::lib;
 use human_bytes::human_bytes;
 use std::io::Cursor;
 use std::io::Read;
-use zip::read::{ZipArchive};
+use zip::read::ZipArchive;
 
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -24,7 +24,9 @@ pub fn read_nested_zip(file_path: &str) -> zip::result::ZipResult<()> {
             continue;
         }
 
-        if inner_zip_file.is_file() && inner_zip_file.name().ends_with(".zip") && inner_zip_file.name().contains("LIG")
+        if inner_zip_file.is_file()
+            && inner_zip_file.name().ends_with(".zip")
+            && inner_zip_file.name().contains("WPL")
         {
             println!(
                 "FILE NAME: {} Size: {} Last Modified: {} Compression: {}",
@@ -32,7 +34,6 @@ pub fn read_nested_zip(file_path: &str) -> zip::result::ZipResult<()> {
                 human_bytes(inner_zip_file.size() as f64),
                 inner_zip_file.last_modified().year(),
                 inner_zip_file.compression()
-                
             );
 
             let mut inner_zip_data = Vec::new();
@@ -54,19 +55,20 @@ pub fn read_nested_zip(file_path: &str) -> zip::result::ZipResult<()> {
 
                 let mut inner_file = inner_zip.by_index(j)?;
 
-                // if j == 0 {
-                let mut contents = String::new();
-                inner_file.read_to_string(&mut contents)?;
-                let bag_stand = lib::BagStand::new(&contents);
-                match bag_stand {
-                    Ok(parsed_bag_stand) => {
-                        println!("{:?}", parsed_bag_stand);
-                    }
-                    Err(error) => {
-                        println!("Error: {}", error);
+                if j == 0 {
+                    let mut contents = String::new();
+                    inner_file.read_to_string(&mut contents)?;
+                    let bag_stand = lib::BagStand::new(&contents);
+                    match bag_stand {
+                        Ok(parsed_bag_stand) => {
+                            let csv_data = Vec::<lib::CSVStruct>::from(parsed_bag_stand);
+                            println!("{:#?}", &csv_data);
+                        }
+                        Err(error) => {
+                            println!("Error: {}", error);
+                        }
                     }
                 }
-                // }
 
                 bar.finish();
             }
@@ -74,8 +76,6 @@ pub fn read_nested_zip(file_path: &str) -> zip::result::ZipResult<()> {
     }
     Ok(())
 }
-
-
 
 // pub fn read_outer_zip(file_path: &str) -> zip::result::ZipResult<Vec<u8>> {
 //     let file = std::fs::File::open(file_path)?;

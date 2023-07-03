@@ -21,5 +21,6 @@ proj = "0.27.0"
 quick-xml = { version = "0.28.2", features = ["tokio", "serialize", "async-tokio"] }
 rayon = "1.7.0"
 serde = { version = "1.0.162", features = ["derive", "serde_derive"] }
+serde_json = "1.0.99"
 wkt = { version = "0.10.3", features = ["serde"] }
 zip = "0.6.5"
