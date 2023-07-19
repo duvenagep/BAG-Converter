@@ -1,8 +1,9 @@
 use crate::helpers::deserializers::{deserialize_coords, deserialize_epsg, deserialize_pos};
-use geo::{Point, Polygon};
+use geo::{Point, Polygon as GeoPolygon};
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 use wkt::ToWkt;
+use std::borrow::Cow;
 
 // Main xml Structure shared by all Enum Variants
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -128,7 +129,7 @@ pub struct Ligplaats {
     pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
-    pub geometrie: GeometriePoly,
+    pub geometrie: Geom,
     pub status: String,
     pub geconstateerd: String,
     pub documentdatum: String,
@@ -226,7 +227,7 @@ pub struct PosListAttr {
     pub coordinate_count: i16,
     #[serde(deserialize_with = "deserialize_coords")]
     #[serde(rename = "$value")]
-    pub pos_list: Polygon,
+    pub pos_list: GeoPolygon,
 }
 
 // OPR Variant Structure
@@ -242,8 +243,8 @@ pub struct OpenbareRuimte {
     pub documentnummer: String,
     #[serde(rename = "ligtIn")]
     pub ligtin: LigtIn,
-    #[serde(rename = "verkorteNaam")]
-    pub verkortenaamouter: VerkorteNaamOuter,
+    #[serde(rename = "Objecten:verkorteNaam")]
+    pub verkortenaamouter: Option<VerkorteNaamOuter>,
     pub voorkomen: Voorkomen,
 }
 
@@ -269,7 +270,7 @@ pub struct VerkorteNaam {
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Pand {
     pub identificatie: Identity,
-    pub geometrie: GeometriePoly,
+    pub geometrie: Geom,
     #[serde(rename = "oorspronkelijkBouwjaar")]
     pub oorspronkelijkbouwjaar: String,
     pub status: String,
@@ -289,10 +290,31 @@ pub struct Standplaats {
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
     pub status: String,
-    pub geometrie: GeometriePoly,
+    pub geometrie: Geom,
     pub geconstateerd: String,
     pub documentdatum: String,
     pub documentnummer: String,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct Geom {
+    #[serde(rename = "$value")]
+    pub geometrie: Geometry,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub enum Geometry {
+    #[serde(rename = "punt")]
+    Punt(Punt),
+
+    #[serde(rename = "Polygon")]
+    Polygon(AttrsPoly),
+    
+    #[serde(rename = "vlak")]
+    Vlak(Vlak),
+
+    #[serde(rename = "multivlak")]
+    MultiVlak(MultiVlak)
 }
 
 // VBO Variant
@@ -302,7 +324,7 @@ pub struct Verblijfsobject {
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
-    pub geometrie: GeometriePoint,
+    pub geometrie: Geom,
     pub gebruiksdoel: Vec<String>,
     pub oppervlakte: Option<String>,
     pub status: String,
@@ -319,18 +341,13 @@ pub struct MaaktDeelUitVan {
     pub pandref: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct GeometriePoint {
-    pub punt: Points,
-}
-
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct Points {
+#[derive(Debug, Deserialize, PartialEq, Serialize, Default)]
+pub struct Punt {
     #[serde(rename = "Point")]
     pub attributes: AttrsPoint,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Default)]
 pub struct AttrsPoint {
     #[serde(deserialize_with = "deserialize_epsg")]
     #[serde(rename = "@srsName")]
@@ -346,7 +363,7 @@ pub struct AttrsPoint {
 pub struct Woonplaats {
     pub identificatie: Identity,
     pub naam: String,
-    pub geometrie: GeometrieVlak,
+    pub geometrie: Geom,
     pub status: String,
     pub geconstateerd: String,
     pub documentdatum: String,
@@ -355,8 +372,31 @@ pub struct Woonplaats {
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
-pub struct GeometrieVlak {
-    pub vlak: Option<Vlak>,
+pub struct MultiVlak {
+    #[serde(rename = "MultiSurface")]
+    pub multi_surface: MultiSurfaceAtters,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct MultiSurfaceAtters {
+    #[serde(deserialize_with = "deserialize_epsg")]
+    #[serde(rename = "@srsName")]
+    pub srs_name: String,
+    #[serde(rename = "@srsDimension")]
+    pub srs_dimension: i8,
+    #[serde(rename = "surfaceMember")]
+    pub surface_member: Vec<SurfaceMember>,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct SurfaceMember {
+    #[serde(rename = "Polygon")]
+    pub polygon: MultiAttrsPoly,
+}
+
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+pub struct MultiAttrsPoly {
+    pub exterior: Exterior,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -372,7 +412,6 @@ impl BagStand {
     }
 }
 
-
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub enum CSVStruct {
     NUM(NUM),
@@ -383,8 +422,6 @@ pub enum CSVStruct {
     VBO(VBO),
     WPL(WPL),
 }
-
-
 
 /// Intermediate Dataframe Compliant struct
 /// TODO -> Implement Zero Copy optimizations Cow<&str>
@@ -454,7 +491,6 @@ pub struct OPR {
     pub tijdstipEindRegistratieLV: String,
 }
 
-
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[allow(non_snake_case)]
 pub struct PND {
@@ -473,7 +509,6 @@ pub struct PND {
     pub tijdstipEindRegistratieLV: String,
     pub geometry: String,
 }
-
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[allow(non_snake_case)]
@@ -634,14 +669,16 @@ impl From<Ligplaats> for CSVStruct {
                 Some(ter) => ter,
                 None => "".to_owned(),
             },
-            geometry: lig
-                .geometrie
-                .attributes
-                .exterior
-                .linear_ring
-                .attributes
-                .pos_list
-                .wkt_string(),
+            geometry: match lig.geometrie.geometrie {
+                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
+                .into_iter()
+                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
+                .collect(),
+            } 
+
         })
     }
 }
@@ -652,11 +689,10 @@ impl From<OpenbareRuimte> for CSVStruct {
             naam: opr.naam,
             _type: opr.type_,
             woonplaatsRef: opr.ligtin.woonplaatsref.woonplaatsref,
-            verkorteNaam: opr
-                .verkortenaamouter
-                .verkortenaam
-                .verkortenaamopenbareruimte
-                .verkortenaam,
+            verkorteNaam: match opr.verkortenaamouter {
+                Some(vkn) => vkn.verkortenaam.verkortenaamopenbareruimte.verkortenaam,
+                None => "".into(),
+            },
             identificatie: opr.identificatie.identificatie,
             status: opr.status,
             geconstateerd: opr.geconstateerd,
@@ -666,7 +702,7 @@ impl From<OpenbareRuimte> for CSVStruct {
             beginGeldigheid: opr.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match opr.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: opr.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match opr.voorkomen.voorkomen.eindregistratie {
@@ -725,14 +761,15 @@ impl From<Pand> for CSVStruct {
                 Some(ter) => ter,
                 None => "".to_owned(),
             },
-            geometry: pnd
-                .geometrie
-                .attributes
-                .exterior
-                .linear_ring
-                .attributes
-                .pos_list
-                .wkt_string(),
+            geometry: match pnd.geometrie.geometrie {
+                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
+                .into_iter()
+                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
+                .collect(),
+            } 
         })
     }
 }
@@ -778,14 +815,15 @@ impl From<Standplaats> for CSVStruct {
                 Some(ter) => ter,
                 None => "".to_owned(),
             },
-            geometry: sta
-                .geometrie
-                .attributes
-                .exterior
-                .linear_ring
-                .attributes
-                .pos_list
-                .wkt_string(),
+            geometry: match sta.geometrie.geometrie {
+                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
+                .into_iter()
+                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
+                .collect(),
+            } 
         })
     }
 }
@@ -796,7 +834,7 @@ impl From<Verblijfsobject> for CSVStruct {
             // gebruiksdoel: vbo.gebruiksdoel.first(),
             oppervlakte: match vbo.oppervlakte {
                 Some(opper) => opper,
-                None => "".to_owned()
+                None => "".to_owned(),
             },
             hoofdadresNummeraanduidingRef: vbo
                 .heeftalshoofdadres
@@ -837,7 +875,15 @@ impl From<Verblijfsobject> for CSVStruct {
                 Some(ter) => ter,
                 None => "".to_owned(),
             },
-            geometry: vbo.geometrie.punt.attributes.pos.wkt_string()
+            geometry: match vbo.geometrie.geometrie {
+                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
+                .into_iter()
+                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
+                .collect(),
+            },
         })
     }
 }
@@ -876,10 +922,15 @@ impl From<Woonplaats> for CSVStruct {
                 Some(ter) => ter,
                 None => "".to_owned(),
             },
-            geometry: match wpl.geometrie.vlak {
-                Some(poly) => poly.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                None => "".to_owned()
-            }
+            geometry: match wpl.geometrie.geometrie {
+                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
+                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
+                .into_iter()
+                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
+                .collect(),
+            },
         })
     }
 }
@@ -892,25 +943,17 @@ impl From<BagStand> for Vec<CSVStruct> {
             .filter_map(|stand| match stand.bag_object.objecten {
                 BagObjectType::Nummeraanduiding(nummeraanduiding) => {
                     Some(CSVStruct::from(nummeraanduiding))
-                },
-                BagObjectType::Ligplaats(ligplaats) => {
-                    Some(CSVStruct::from(ligplaats))
-                },
+                }
+                BagObjectType::Ligplaats(ligplaats) => Some(CSVStruct::from(ligplaats)),
                 BagObjectType::OpenbareRuimte(openbareruimte) => {
                     Some(CSVStruct::from(openbareruimte))
-                },
-                BagObjectType::Pand(pand) => {
-                    Some(CSVStruct::from(pand))
-                },
-                BagObjectType::Standplaats(standplaats) => {
-                    Some(CSVStruct::from(standplaats))
-                },
+                }
+                BagObjectType::Pand(pand) => Some(CSVStruct::from(pand)),
+                BagObjectType::Standplaats(standplaats) => Some(CSVStruct::from(standplaats)),
                 BagObjectType::Verblijfsobject(verblijfsobject) => {
                     Some(CSVStruct::from(verblijfsobject))
-                },
-                BagObjectType::Woonplaats(woonplaats) => {
-                    Some(CSVStruct::from(woonplaats))
-                },
+                }
+                BagObjectType::Woonplaats(woonplaats) => Some(CSVStruct::from(woonplaats)),
             })
             .collect()
     }

@@ -96,3 +96,17 @@ pub enum BagObjects {
     NUM,
     STA,
 }
+
+impl ToString for BagObjects {
+    fn to_string(&self) -> String {
+        match &self {
+            BagObjects::VBO => "VBO".to_string(),
+            BagObjects::OPR => "OPR".to_string(),
+            BagObjects::WPL => "WPL".to_string(),
+            BagObjects::LIG => "LIG".to_string(),
+            BagObjects::PND => "PND".to_string(),
+            BagObjects::NUM => "NUM".to_string(),
+            BagObjects::STA => "STA".to_string(),
+        }
+    }
+}
