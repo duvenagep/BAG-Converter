@@ -5,3 +5,4 @@ lvbag-extract-nl
 *.xml
 *.vscode
 *.DS_Store
+*.svg

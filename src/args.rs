@@ -99,14 +99,15 @@ pub enum BagObjects {
 
 impl ToString for BagObjects {
     fn to_string(&self) -> String {
+        use BagObjects::*;
         match &self {
-            BagObjects::VBO => "VBO".to_string(),
-            BagObjects::OPR => "OPR".to_string(),
-            BagObjects::WPL => "WPL".to_string(),
-            BagObjects::LIG => "LIG".to_string(),
-            BagObjects::PND => "PND".to_string(),
-            BagObjects::NUM => "NUM".to_string(),
-            BagObjects::STA => "STA".to_string(),
+            VBO => "VBO".to_string(),
+            OPR => "OPR".to_string(),
+            WPL => "WPL".to_string(),
+            LIG => "LIG".to_string(),
+            PND => "PND".to_string(),
+            NUM => "NUM".to_string(),
+            STA => "STA".to_string(),
         }
     }
 }

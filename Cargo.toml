@@ -2,12 +2,13 @@
 name = "nlx"
 version = "0.0.1"
 author = "Paul Duvenage <duvenagep@gmail.com>"
-about = "This is a simple CLI to parse the LVBAG Extract XMLs"
+about = "A simple CLI to parse the LVBAG Extract XMLs"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.72"
 cargo-watch = "8.4.0"
 chrono = { version = "0.4.24", features = ["serde"] }
 clap = { version = "4.3.0", features = ["derive"] }
@@ -15,7 +16,9 @@ clippy = "0.0.302"
 csv = "1.2.1"
 geo = { version = "0.25.0", features = ["use-serde", "proj"] }
 human_bytes = "0.4.2"
-indicatif = "0.17.3"
+indicatif = { version = "0.17.3", features = ["rayon"] }
+libdeflater = "0.14.0"
+memmap = "0.7.0"
 pretty_assertions = "1.3.0"
 proj = "0.27.0"
 quick-xml = { version = "0.28.2", features = ["tokio", "serialize", "async-tokio"] }
@@ -23,4 +26,8 @@ rayon = "1.7.0"
 serde = { version = "1.0.162", features = ["derive", "serde_derive"] }
 serde_json = "1.0.99"
 wkt = { version = "0.10.3", features = ["serde"] }
-zip = "0.6.5"
+zip = { version =  "0.6.5", default-features = false }
+# zip = "0.6.5"
+
+[profile.release]
+debug = true
