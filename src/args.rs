@@ -1,19 +1,6 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
-/// ***************************************************************************
-///     _   ____       _______  ____________  ___   ____________   _    _____
-///    / | / / /      / ____/ |/ /_  __/ __ \/   | / ____/_  __/  | |  / /__ \
-///   /  |/ / /      / __/  |   / / / / /_/ / /| |/ /     / /     | | / /__/ /
-///  / /|  / /___   / /___ /   | / / / _, _/ ___ / /___  / /      | |/ // __/
-/// /_/ |_/_____/  /_____//_/|_|/_/ /_/ |_/_/  |_\____/ /_/       |___//____/
-/// ***************************************************************************                                                                           
-/// This is a CLI for the NLBAG v2 extract
-/// This CLI has 3 main methods:
-///  - Download LVBAG extract v2.0
-///  - Parse BAG XML to Postgresql or CSV
-///  - Parse & Upload to s3 Bucket
 #[derive(Debug, Parser)]
-#[clap(verbatim_doc_comment)]
 #[command(author, version, about, long_about = None)]
 pub struct NLExtractArgs {
     #[clap(subcommand)]
@@ -23,7 +10,7 @@ pub struct NLExtractArgs {
 #[derive(Debug, Subcommand)]
 pub enum EntityType {
     /// Specify LVBAG (Landelijke Voorziening Basisregistratie Adressen en Gebouwen) BAG 2.0 Extract download URL and destination folder
-    LVBAG(LVBAGCommand),
+    Lvbag(LVBAGCommand),
 }
 
 #[derive(Debug, Args)]
@@ -88,26 +75,26 @@ pub struct ParseLvbag {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, ValueEnum)]
 pub enum BagObjects {
-    VBO,
-    OPR,
-    WPL,
-    LIG,
-    PND,
-    NUM,
-    STA,
+    Vbo,
+    Opr,
+    Wpl,
+    Lig,
+    Pnd,
+    Num,
+    Sta,
 }
 
 impl ToString for BagObjects {
     fn to_string(&self) -> String {
         use BagObjects::*;
         match &self {
-            VBO => "VBO".to_string(),
-            OPR => "OPR".to_string(),
-            WPL => "WPL".to_string(),
-            LIG => "LIG".to_string(),
-            PND => "PND".to_string(),
-            NUM => "NUM".to_string(),
-            STA => "STA".to_string(),
+            Vbo => "VBO".to_string(),
+            Opr => "OPR".to_string(),
+            Wpl => "WPL".to_string(),
+            Lig => "LIG".to_string(),
+            Pnd => "PND".to_string(),
+            Num => "NUM".to_string(),
+            Sta => "STA".to_string(),
         }
     }
 }
