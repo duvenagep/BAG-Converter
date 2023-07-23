@@ -1,22 +1,16 @@
 use crate::bag::lib::*;
-use anyhow::{Context, bail};
+use anyhow;
 use csv::Writer;
 use human_bytes::human_bytes;
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Cursor;
 use std::io::Read;
 use std::sync::Arc;
 use std::sync::Mutex;
-use zip::result::ZipResult;
-
-use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use rayon::prelude::*;
 use zip::read::ZipArchive;
 use zip::read::ZipFile;
-use zip::result::ZipError;
-
-
 
 // #[derive(Debug, Clone, Copy)]
 // struct FileInfo {
@@ -43,18 +37,6 @@ use zip::result::ZipError;
 //     Ok(info)
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
 fn should_skip_file(filename: &str) -> bool {
     let skip_conditions = ["InOnderzoek", "Inactief", "NietBag", "GEM-WPL-RELATIE"];
     skip_conditions
@@ -65,14 +47,14 @@ fn should_skip_file(filename: &str) -> bool {
 pub fn read_nested_zip(
     file_path: &str,
     obj: String,
-    multi_pb: Arc<Mutex<MultiProgress>>,
-) -> zip::result::ZipResult<()> {
+    multi_pb: &Arc<Mutex<MultiProgress>>,
+) -> Result<(), anyhow::Error> {
     let file = std::fs::File::open(file_path)?;
     let mut zip = ZipArchive::new(file)?;
 
     for i in 0..zip.len() {
         let mut inner_zip_file = zip.by_index(i)?;
-       
+
         if should_skip_file(inner_zip_file.name()) {
             continue;
         }
@@ -81,11 +63,8 @@ pub fn read_nested_zip(
             && inner_zip_file.name().ends_with(".zip")
             && inner_zip_file.name().contains(&obj)
         {
-
-
             let mut inner_zip_data = Vec::new();
             inner_zip_file.read_to_end(&mut inner_zip_data)?;
-
 
             let mut inner_zip = ZipArchive::new(Cursor::new(&inner_zip_data))?;
 
@@ -103,7 +82,7 @@ pub fn read_nested_zip(
                 .progress_chars("##-"),
             );
 
-            let output_file_name = format!("output/{}.csv", obj);
+            let output_file_name = format!("output/{obj}.csv");
             let _file = File::create(&output_file_name)?;
             let file = OpenOptions::new()
                 .write(true)
@@ -122,14 +101,14 @@ pub fn read_nested_zip(
                 let bag_stand = BagStand::new(&contents);
                 match bag_stand {
                     Ok(parsed_bag_stand) => {
-                        let csv_data: Vec::<CSVStruct> = parsed_bag_stand.into();
+                        let csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
 
                         csv_data
                             .into_iter()
                             .for_each(|element| element.to_csv(&mut writer));
                     }
                     Err(error) => {
-                        println!("Error: {}", error);
+                        println!("Error: {error}");
                     }
                 }
             }
