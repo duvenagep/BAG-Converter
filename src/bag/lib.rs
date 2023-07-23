@@ -2,8 +2,8 @@ use crate::helpers::deserializers::{deserialize_coords, deserialize_epsg, deseri
 use geo::{Point, Polygon as GeoPolygon};
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
-use wkt::ToWkt;
 use std::borrow::Cow;
+use wkt::ToWkt;
 
 // Main xml Structure shared by all Enum Variants
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -127,12 +127,18 @@ pub struct Ligplaats {
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     #[serde(rename = "heeftAlsNevenadres")]
     pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
+
     pub voorkomen: Voorkomen,
+
     pub identificatie: Identity,
     pub geometrie: Geom,
+
     pub status: String,
+
     pub geconstateerd: String,
+
     pub documentdatum: String,
+
     pub documentnummer: String,
 }
 
@@ -234,17 +240,23 @@ pub struct PosListAttr {
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct OpenbareRuimte {
     pub identificatie: Identity,
+
     pub naam: String,
     #[serde(rename = "type")]
     pub type_: String,
+
     pub status: String,
+
     pub geconstateerd: String,
+
     pub documentdatum: String,
+
     pub documentnummer: String,
     #[serde(rename = "ligtIn")]
     pub ligtin: LigtIn,
     #[serde(rename = "Objecten:verkorteNaam")]
     pub verkortenaamouter: Option<VerkorteNaamOuter>,
+
     pub voorkomen: Voorkomen,
 }
 
@@ -273,10 +285,15 @@ pub struct Pand {
     pub geometrie: Geom,
     #[serde(rename = "oorspronkelijkBouwjaar")]
     pub oorspronkelijkbouwjaar: String,
+
     pub status: String,
+
     pub geconstateerd: String,
+
     pub documentdatum: String,
+
     pub documentnummer: String,
+
     pub voorkomen: Voorkomen,
 }
 
@@ -287,12 +304,18 @@ pub struct Standplaats {
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     #[serde(rename = "heeftAlsNevenadres")]
     pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
+
     pub voorkomen: Voorkomen,
+
     pub identificatie: Identity,
+
     pub status: String,
     pub geometrie: Geom,
+
     pub geconstateerd: String,
+
     pub documentdatum: String,
+
     pub documentnummer: String,
 }
 
@@ -309,12 +332,12 @@ pub enum Geometry {
 
     #[serde(rename = "Polygon")]
     Polygon(AttrsPoly),
-    
+
     #[serde(rename = "vlak")]
     Vlak(Vlak),
 
     #[serde(rename = "multivlak")]
-    MultiVlak(MultiVlak)
+    MultiVlak(MultiVlak),
 }
 
 // VBO Variant
@@ -322,14 +345,22 @@ pub enum Geometry {
 pub struct Verblijfsobject {
     #[serde(rename = "heeftAlsHoofdadres")]
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
+
     pub voorkomen: Voorkomen,
+
     pub identificatie: Identity,
     pub geometrie: Geom,
+
     pub gebruiksdoel: Vec<String>,
+
     pub oppervlakte: Option<String>,
+
     pub status: String,
+
     pub geconstateerd: String,
+
     pub documentdatum: String,
+
     pub documentnummer: String,
     #[serde(rename = "maaktDeelUitVan")]
     pub maaktdeelditvan: MaaktDeelUitVan,
@@ -362,12 +393,18 @@ pub struct AttrsPoint {
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Woonplaats {
     pub identificatie: Identity,
+
     pub naam: String,
     pub geometrie: Geom,
+
     pub status: String,
+
     pub geconstateerd: String,
+
     pub documentdatum: String,
+
     pub documentnummer: String,
+
     pub voorkomen: Voorkomen,
 }
 
@@ -421,6 +458,43 @@ pub enum CSVStruct {
     STA(STA),
     VBO(VBO),
     WPL(WPL),
+}
+
+impl CSVStruct {
+    pub fn to_csv(self, wtr: &mut csv::Writer<std::fs::File>) {
+        use CSVStruct::*;
+
+        match self {
+            NUM(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            LIG(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            OPR(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            PND(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            STA(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            VBO(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            WPL(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+        }
+    }
 }
 
 /// Intermediate Dataframe Compliant struct
@@ -578,21 +652,21 @@ impl From<Nummeraanduiding> for CSVStruct {
             huisnummer: num.huisnummer,
             huisletter: match num.huisletter {
                 Some(hl) => hl,
-                None => "".to_owned(),
+                None => "".into(),
             },
             huisnummerToevoeging: match num.huisnummertoevoeging {
                 Some(ht) => ht,
-                None => "".to_owned(),
+                None => "".into(),
             },
             postcode: match num.postcode {
                 Some(pc) => pc,
-                None => "".to_owned(),
+                None => "".into(),
             },
             typeAdresseerbaarObject: num.type_adresseerbaar_object,
             openbareruimteRef: num.ligtaan.openbareruimteref.openbareruimteref,
             woonplaatsRef: match num.ligtin {
                 Some(ligt) => ligt.woonplaatsref.woonplaatsref,
-                None => "".to_owned(),
+                None => "".into(),
             },
             identificatie: num.identificatie.identificatie,
             status: num.status,
@@ -603,12 +677,12 @@ impl From<Nummeraanduiding> for CSVStruct {
             beginGeldigheid: num.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match num.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: num.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match num.voorkomen.voorkomen.eindregistratie {
                 Some(ert) => ert,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: num
                 .voorkomen
@@ -622,7 +696,7 @@ impl From<Nummeraanduiding> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(tlv) => tlv,
-                None => "".to_owned(),
+                None => "".into(),
             },
         })
     }
@@ -648,12 +722,12 @@ impl From<Ligplaats> for CSVStruct {
             beginGeldigheid: lig.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match lig.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: lig.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match lig.voorkomen.voorkomen.eindregistratie {
                 Some(er) => er,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: lig
                 .voorkomen
@@ -667,18 +741,39 @@ impl From<Ligplaats> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(ter) => ter,
-                None => "".to_owned(),
+                None => "".into(),
             },
             geometry: match lig.geometrie.geometrie {
-                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
-                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
-                .into_iter()
-                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
-                .collect(),
-            } 
-
+                Geometry::Punt(point) => point.attributes.pos.wkt_string().into(),
+                Geometry::Polygon(polygon) => polygon
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::Vlak(vlak) => vlak
+                    .attributes
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::MultiVlak(mvlak) => mvlak
+                    .multi_surface
+                    .surface_member
+                    .into_iter()
+                    .map(|p| {
+                        p.polygon
+                            .exterior
+                            .linear_ring
+                            .attributes
+                            .pos_list
+                            .wkt_string()
+                    })
+                    .collect(),
+            },
         })
     }
 }
@@ -707,7 +802,7 @@ impl From<OpenbareRuimte> for CSVStruct {
             tijdstipRegistratie: opr.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match opr.voorkomen.voorkomen.eindregistratie {
                 Some(er) => er,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: opr
                 .voorkomen
@@ -721,7 +816,7 @@ impl From<OpenbareRuimte> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(ter) => ter,
-                None => "".to_owned(),
+                None => "".into(),
             },
         })
     }
@@ -740,12 +835,12 @@ impl From<Pand> for CSVStruct {
             beginGeldigheid: pnd.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match pnd.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: pnd.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match pnd.voorkomen.voorkomen.eindregistratie {
                 Some(er) => er,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: pnd
                 .voorkomen
@@ -759,17 +854,39 @@ impl From<Pand> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(ter) => ter,
-                None => "".to_owned(),
+                None => "".into(),
             },
             geometry: match pnd.geometrie.geometrie {
-                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
-                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
-                .into_iter()
-                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
-                .collect(),
-            } 
+                Geometry::Punt(point) => point.attributes.pos.wkt_string().into(),
+                Geometry::Polygon(polygon) => polygon
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::Vlak(vlak) => vlak
+                    .attributes
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::MultiVlak(mvlak) => mvlak
+                    .multi_surface
+                    .surface_member
+                    .into_iter()
+                    .map(|p| {
+                        p.polygon
+                            .exterior
+                            .linear_ring
+                            .attributes
+                            .pos_list
+                            .wkt_string()
+                    })
+                    .collect(),
+            },
         })
     }
 }
@@ -794,12 +911,12 @@ impl From<Standplaats> for CSVStruct {
             beginGeldigheid: sta.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match sta.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: sta.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match sta.voorkomen.voorkomen.eindregistratie {
                 Some(er) => er,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: sta
                 .voorkomen
@@ -813,17 +930,39 @@ impl From<Standplaats> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(ter) => ter,
-                None => "".to_owned(),
+                None => "".into(),
             },
             geometry: match sta.geometrie.geometrie {
-                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
-                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
-                .into_iter()
-                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
-                .collect(),
-            } 
+                Geometry::Punt(point) => point.attributes.pos.wkt_string().into(),
+                Geometry::Polygon(polygon) => polygon
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::Vlak(vlak) => vlak
+                    .attributes
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::MultiVlak(mvlak) => mvlak
+                    .multi_surface
+                    .surface_member
+                    .into_iter()
+                    .map(|p| {
+                        p.polygon
+                            .exterior
+                            .linear_ring
+                            .attributes
+                            .pos_list
+                            .wkt_string()
+                    })
+                    .collect(),
+            },
         })
     }
 }
@@ -834,7 +973,7 @@ impl From<Verblijfsobject> for CSVStruct {
             // gebruiksdoel: vbo.gebruiksdoel.first(),
             oppervlakte: match vbo.oppervlakte {
                 Some(opper) => opper,
-                None => "".to_owned(),
+                None => "".into(),
             },
             hoofdadresNummeraanduidingRef: vbo
                 .heeftalshoofdadres
@@ -854,12 +993,12 @@ impl From<Verblijfsobject> for CSVStruct {
             beginGeldigheid: vbo.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match vbo.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: vbo.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match vbo.voorkomen.voorkomen.eindregistratie {
                 Some(er) => er,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: vbo
                 .voorkomen
@@ -873,16 +1012,38 @@ impl From<Verblijfsobject> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(ter) => ter,
-                None => "".to_owned(),
+                None => "".into(),
             },
             geometry: match vbo.geometrie.geometrie {
-                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
-                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
-                .into_iter()
-                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
-                .collect(),
+                Geometry::Punt(point) => point.attributes.pos.wkt_string().into(),
+                Geometry::Polygon(polygon) => polygon
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::Vlak(vlak) => vlak
+                    .attributes
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::MultiVlak(mvlak) => mvlak
+                    .multi_surface
+                    .surface_member
+                    .into_iter()
+                    .map(|p| {
+                        p.polygon
+                            .exterior
+                            .linear_ring
+                            .attributes
+                            .pos_list
+                            .wkt_string()
+                    })
+                    .collect(),
             },
         })
     }
@@ -901,12 +1062,12 @@ impl From<Woonplaats> for CSVStruct {
             beginGeldigheid: wpl.voorkomen.voorkomen.begingeldigheid,
             eindGeldigheid: match wpl.voorkomen.voorkomen.eindgeldigheid {
                 Some(egh) => egh,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratie: wpl.voorkomen.voorkomen.tijdstipregistratie,
             eindRegistratie: match wpl.voorkomen.voorkomen.eindregistratie {
                 Some(er) => er,
-                None => "".to_owned(),
+                None => "".into(),
             },
             tijdstipRegistratieLV: wpl
                 .voorkomen
@@ -920,16 +1081,38 @@ impl From<Woonplaats> for CSVStruct {
                 .tijdstipeindregistratie_lv
             {
                 Some(ter) => ter,
-                None => "".to_owned(),
+                None => "".into(),
             },
             geometry: match wpl.geometrie.geometrie {
-                Geometry::Punt(point) => point.attributes.pos.wkt_string(),
-                Geometry::Polygon(polygon) => polygon.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::Vlak(vlak) => vlak.attributes.exterior.linear_ring.attributes.pos_list.wkt_string(),
-                Geometry::MultiVlak(mvlak) => mvlak.multi_surface.surface_member
-                .into_iter()
-                .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list.wkt_string())
-                .collect(),
+                Geometry::Punt(point) => point.attributes.pos.wkt_string().into(),
+                Geometry::Polygon(polygon) => polygon
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::Vlak(vlak) => vlak
+                    .attributes
+                    .exterior
+                    .linear_ring
+                    .attributes
+                    .pos_list
+                    .wkt_string()
+                    .into(),
+                Geometry::MultiVlak(mvlak) => mvlak
+                    .multi_surface
+                    .surface_member
+                    .into_iter()
+                    .map(|p| {
+                        p.polygon
+                            .exterior
+                            .linear_ring
+                            .attributes
+                            .pos_list
+                            .wkt_string()
+                    })
+                    .collect(),
             },
         })
     }
@@ -937,23 +1120,19 @@ impl From<Woonplaats> for CSVStruct {
 
 impl From<BagStand> for Vec<CSVStruct> {
     fn from(b: BagStand) -> Self {
+        use BagObjectType::*;
+
         b.stand_bestand
             .stand
             .into_iter()
             .filter_map(|stand| match stand.bag_object.objecten {
-                BagObjectType::Nummeraanduiding(nummeraanduiding) => {
-                    Some(CSVStruct::from(nummeraanduiding))
-                }
-                BagObjectType::Ligplaats(ligplaats) => Some(CSVStruct::from(ligplaats)),
-                BagObjectType::OpenbareRuimte(openbareruimte) => {
-                    Some(CSVStruct::from(openbareruimte))
-                }
-                BagObjectType::Pand(pand) => Some(CSVStruct::from(pand)),
-                BagObjectType::Standplaats(standplaats) => Some(CSVStruct::from(standplaats)),
-                BagObjectType::Verblijfsobject(verblijfsobject) => {
-                    Some(CSVStruct::from(verblijfsobject))
-                }
-                BagObjectType::Woonplaats(woonplaats) => Some(CSVStruct::from(woonplaats)),
+                Nummeraanduiding(nummeraanduiding) => Some(CSVStruct::from(nummeraanduiding)),
+                Ligplaats(ligplaats) => Some(CSVStruct::from(ligplaats)),
+                OpenbareRuimte(openbareruimte) => Some(CSVStruct::from(openbareruimte)),
+                Pand(pand) => Some(CSVStruct::from(pand)),
+                Standplaats(standplaats) => Some(CSVStruct::from(standplaats)),
+                Verblijfsobject(verblijfsobject) => Some(CSVStruct::from(verblijfsobject)),
+                Woonplaats(woonplaats) => Some(CSVStruct::from(woonplaats)),
             })
             .collect()
     }
