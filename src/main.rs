@@ -1,21 +1,29 @@
 // #![allow(unused)]
 
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
 mod args;
 mod bag;
 mod helpers;
 mod work_dir;
 use args::{BagObjects, EntityType, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
-use helpers::zip_seek::read_nested_zip;
+use helpers::zip_seek::{libdeflate, read_nested_zip};
 use indicatif::MultiProgress;
+use memmap2::Mmap;
 use rayon::prelude::*;
 use std::collections::HashSet;
+use std::fs::File;
 use std::sync::{Arc, Mutex};
 
 use std::time::Instant;
 use work_dir::new_folder;
 
 fn main() {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
     let now = Instant::now();
     let cli = NLExtractArgs::parse();
 
@@ -33,9 +41,11 @@ fn main() {
 
             LVBAGSubCommand::Parse(parse) => {
                 let _output_folder = new_folder("output");
-
-                println!("{:?}", &parse);
                 let path = &parse.file;
+                let file = File::open(path).expect("failed to open the file");
+
+                let mmap = unsafe { Mmap::map(&file).expect("failed to map the file") };
+                println!("{:?}", &parse);
 
                 match parse.bag_object {
                     None => {
@@ -53,13 +63,13 @@ fn main() {
                         let multi_pb = Arc::new(Mutex::new(MultiProgress::new()));
 
                         obj.into_par_iter().for_each(|o| {
-                            let _ = read_nested_zip(path, o.to_string(), &multi_pb);
+                            let _ = libdeflate(&mmap[..], o.to_string(), &multi_pb);
                         });
                     }
 
                     Some(list) => {
                         let multi_pb = Arc::new(Mutex::new(MultiProgress::new()));
-                        let set: HashSet<_> = list.clone().into_iter().collect();
+                        let set: HashSet<_> = list.into_iter().collect();
 
                         set.into_par_iter().for_each(|o| match o {
                             BagObjects::Lig
@@ -70,7 +80,7 @@ fn main() {
                             | BagObjects::Vbo
                             | BagObjects::Wpl => {
                                 println!("Parsing {:?}", &o);
-                                let _ = read_nested_zip(path, o.to_string(), &multi_pb);
+                                let _ = libdeflate(&mmap[..], o.to_string(), &multi_pb);
                             }
                         });
                     }

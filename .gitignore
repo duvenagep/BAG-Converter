@@ -6,3 +6,4 @@ lvbag-extract-nl
 *.vscode
 *.DS_Store
 *.svg
+*.json

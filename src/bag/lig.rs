@@ -2,6 +2,7 @@ use crate::bag::geometries::*;
 use crate::bag::shared::*;
 use serde;
 use serde::{Deserialize, Serialize};
+use wkt::ToWkt;
 
 // LIG Variant Structure
 #[derive(Deserialize)]
@@ -37,4 +38,76 @@ pub struct Lig {
     pub tijdstipRegistratieLV: String,
     pub tijdstipEindRegistratieLV: String,
     pub geometry: String,
+}
+
+pub fn to_lig(lig: Ligplaats) -> Lig {
+    Lig {
+        hoofdadresNummeraanduidingRef: lig
+            .heeftalshoofdadres
+            .nummeraanduidingref
+            .nummeraanduidingref,
+        // nevenadresNummeraanduidingRef: match lig.heeftalsnevenadres {
+        //     Some(neven_adress) => neven_adress,
+        //     None => todo!(),
+        // },
+        identificatie: lig.identificatie.identificatie,
+        status: lig.status,
+        geconstateerd: lig.geconstateerd,
+        documentDatum: lig.documentdatum,
+        documentNummer: lig.documentnummer,
+        voorkomenIdentificatie: lig.voorkomen.voorkomen.voorkomenidentificatie,
+        beginGeldigheid: lig.voorkomen.voorkomen.begingeldigheid,
+        eindGeldigheid: match lig.voorkomen.voorkomen.eindgeldigheid {
+            Some(egh) => egh,
+            None => String::new(),
+        },
+        tijdstipRegistratie: lig.voorkomen.voorkomen.tijdstipregistratie,
+        eindRegistratie: match lig.voorkomen.voorkomen.eindregistratie {
+            Some(er) => er,
+            None => String::new(),
+        },
+        tijdstipRegistratieLV: lig
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipregistratie_lv,
+        tijdstipEindRegistratieLV: match lig
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipeindregistratie_lv
+        {
+            Some(ter) => ter,
+            None => String::new(),
+        },
+        geometry: match lig.geometrie.geometrie {
+            Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+            Geometry::Polygon(polygon) => polygon
+                .exterior
+                .linear_ring
+                .attributes
+                .pos_list
+                .wkt_string(),
+            Geometry::Vlak(vlak) => vlak
+                .attributes
+                .exterior
+                .linear_ring
+                .attributes
+                .pos_list
+                .wkt_string(),
+            Geometry::MultiVlak(mvlak) => mvlak
+                .multi_surface
+                .surface_member
+                .into_iter()
+                .map(|p| {
+                    p.polygon
+                        .exterior
+                        .linear_ring
+                        .attributes
+                        .pos_list
+                        .wkt_string()
+                })
+                .collect(),
+        },
+    }
 }

@@ -58,3 +58,45 @@ pub struct Opr {
     pub tijdstipRegistratieLV: String,
     pub tijdstipEindRegistratieLV: String,
 }
+
+pub fn to_opr(opr: OpenbareRuimte) -> Opr {
+    Opr {
+        naam: opr.naam,
+        _type: opr.type_,
+        woonplaatsRef: opr.ligtin.woonplaatsref.woonplaatsref,
+        verkorteNaam: match opr.verkortenaamouter {
+            Some(vkn) => vkn.verkortenaam.verkortenaamopenbareruimte.verkortenaam,
+            None => String::new(),
+        },
+        identificatie: opr.identificatie.identificatie,
+        status: opr.status,
+        geconstateerd: opr.geconstateerd,
+        documentDatum: opr.documentdatum,
+        documentNummer: opr.documentnummer,
+        voorkomenIdentificatie: opr.voorkomen.voorkomen.voorkomenidentificatie,
+        beginGeldigheid: opr.voorkomen.voorkomen.begingeldigheid,
+        eindGeldigheid: match opr.voorkomen.voorkomen.eindgeldigheid {
+            Some(egh) => egh,
+            None => String::new(),
+        },
+        tijdstipRegistratie: opr.voorkomen.voorkomen.tijdstipregistratie,
+        eindRegistratie: match opr.voorkomen.voorkomen.eindregistratie {
+            Some(er) => er,
+            None => String::new(),
+        },
+        tijdstipRegistratieLV: opr
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipregistratie_lv,
+        tijdstipEindRegistratieLV: match opr
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipeindregistratie_lv
+        {
+            Some(ter) => ter,
+            None => String::new(),
+        },
+    }
+}
