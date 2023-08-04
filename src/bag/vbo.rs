@@ -2,6 +2,7 @@ use crate::bag::geometries::*;
 use crate::bag::shared::*;
 use serde;
 use serde::{Deserialize, Serialize};
+use wkt::ToWkt;
 
 // VBO Variant
 #[derive(Deserialize)]
@@ -48,4 +49,82 @@ pub struct Vbo {
     pub tijdstipRegistratieLV: String,
     pub tijdstipEindRegistratieLV: String,
     pub geometry: String,
+}
+
+pub fn to_vbo(vbo: Verblijfsobject) -> Vbo {
+    Vbo {
+        // gebruiksdoel: vbo.gebruiksdoel.first(),
+        oppervlakte: match vbo.oppervlakte {
+            Some(opper) => opper,
+            None => String::new(),
+        },
+        hoofdadresNummeraanduidingRef: vbo
+            .heeftalshoofdadres
+            .nummeraanduidingref
+            .nummeraanduidingref,
+        // nevenadresNummeraanduidingRef: match vbo.heeftalsnevenadres {
+        //     Some(neven_adress) => neven_adress,
+        //     None => todo!(),
+        // },
+        // pandRef: vbo.maaktdeelditvan.pandref,
+        identificatie: vbo.identificatie.identificatie,
+        status: vbo.status,
+        geconstateerd: vbo.geconstateerd,
+        documentDatum: vbo.documentdatum,
+        documentNummer: vbo.documentnummer,
+        voorkomenIdentificatie: vbo.voorkomen.voorkomen.voorkomenidentificatie,
+        beginGeldigheid: vbo.voorkomen.voorkomen.begingeldigheid,
+        eindGeldigheid: match vbo.voorkomen.voorkomen.eindgeldigheid {
+            Some(egh) => egh,
+            None => String::new(),
+        },
+        tijdstipRegistratie: vbo.voorkomen.voorkomen.tijdstipregistratie,
+        eindRegistratie: match vbo.voorkomen.voorkomen.eindregistratie {
+            Some(er) => er,
+            None => String::new(),
+        },
+        tijdstipRegistratieLV: vbo
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipregistratie_lv,
+        tijdstipEindRegistratieLV: match vbo
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipeindregistratie_lv
+        {
+            Some(ter) => ter,
+            None => String::new(),
+        },
+        geometry: match vbo.geometrie.geometrie {
+            Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+            Geometry::Polygon(polygon) => polygon
+                .exterior
+                .linear_ring
+                .attributes
+                .pos_list
+                .wkt_string(),
+            Geometry::Vlak(vlak) => vlak
+                .attributes
+                .exterior
+                .linear_ring
+                .attributes
+                .pos_list
+                .wkt_string(),
+            Geometry::MultiVlak(mvlak) => mvlak
+                .multi_surface
+                .surface_member
+                .into_iter()
+                .map(|p| {
+                    p.polygon
+                        .exterior
+                        .linear_ring
+                        .attributes
+                        .pos_list
+                        .wkt_string()
+                })
+                .collect(),
+        },
+    }
 }

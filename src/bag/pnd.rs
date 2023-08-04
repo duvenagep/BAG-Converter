@@ -2,6 +2,7 @@ use crate::bag::geometries::*;
 use crate::bag::shared::*;
 use serde;
 use serde::{Deserialize, Serialize};
+use wkt::ToWkt;
 
 //PND Variant
 #[derive(Deserialize)]
@@ -34,4 +35,69 @@ pub struct Pnd {
     pub tijdstipRegistratieLV: String,
     pub tijdstipEindRegistratieLV: String,
     pub geometry: String,
+}
+
+pub fn to_pnd(pnd: Pand) -> Pnd {
+    Pnd {
+        oorspronkelijkBouwjaar: pnd.oorspronkelijkbouwjaar,
+        identificatie: pnd.identificatie.identificatie,
+        status: pnd.status,
+        geconstateerd: pnd.geconstateerd,
+        documentDatum: pnd.documentdatum,
+        documentNummer: pnd.documentnummer,
+        voorkomenIdentificatie: pnd.voorkomen.voorkomen.voorkomenidentificatie,
+        beginGeldigheid: pnd.voorkomen.voorkomen.begingeldigheid,
+        eindGeldigheid: match pnd.voorkomen.voorkomen.eindgeldigheid {
+            Some(egh) => egh,
+            None => String::new(),
+        },
+        tijdstipRegistratie: pnd.voorkomen.voorkomen.tijdstipregistratie,
+        eindRegistratie: match pnd.voorkomen.voorkomen.eindregistratie {
+            Some(er) => er,
+            None => String::new(),
+        },
+        tijdstipRegistratieLV: pnd
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipregistratie_lv,
+        tijdstipEindRegistratieLV: match pnd
+            .voorkomen
+            .voorkomen
+            .beschikbaar_lv
+            .tijdstipeindregistratie_lv
+        {
+            Some(ter) => ter,
+            None => String::new(),
+        },
+        geometry: match pnd.geometrie.geometrie {
+            Geometry::Punt(point) => point.attributes.pos.wkt_string(),
+            Geometry::Polygon(polygon) => polygon
+                .exterior
+                .linear_ring
+                .attributes
+                .pos_list
+                .wkt_string(),
+            Geometry::Vlak(vlak) => vlak
+                .attributes
+                .exterior
+                .linear_ring
+                .attributes
+                .pos_list
+                .wkt_string(),
+            Geometry::MultiVlak(mvlak) => mvlak
+                .multi_surface
+                .surface_member
+                .into_iter()
+                .map(|p| {
+                    p.polygon
+                        .exterior
+                        .linear_ring
+                        .attributes
+                        .pos_list
+                        .wkt_string()
+                })
+                .collect(),
+        },
+    }
 }
