@@ -115,4 +115,3 @@ pub fn to_num(num: Nummeraanduiding) -> Num {
         },
     }
 }
-

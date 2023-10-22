@@ -12,7 +12,6 @@ use std::sync::Mutex;
 use zip::read::ZipArchive;
 use zip::read::ZipFile;
 
-
 #[derive(Debug, Clone)]
 struct FileInfo {
     start: usize,
@@ -99,7 +98,7 @@ pub fn libdeflate(
                 .open(&output_file_name)?;
 
             let mut writer = Writer::from_writer(cfile);
-        
+
             for inner_file in inner_info {
                 bar.inc(1);
                 let inner_out_len = inner_file.inflated_size;
@@ -141,90 +140,6 @@ fn should_skip_file(filename: &str) -> bool {
     skip_conditions
         .iter()
         .any(|condition| filename.contains(condition))
-}
-
-pub fn read_nested_zip(
-    file_path: &[u8],
-    obj: String,
-    multi_pb: &Arc<Mutex<MultiProgress>>,
-) -> Result<(), anyhow::Error> {
-    // let file = std::fs::File::open(file_path)?;
-    let mut zip = ZipArchive::new(Cursor::new(file_path))?;
-    // let info = archive_info(&mut zip)?;
-
-    for i in 0..zip.len() {
-        let mut inner_zip_file = zip.by_index(i)?;
-        let cap = inner_zip_file.size() as usize;
-
-        if should_skip_file(inner_zip_file.name()) {
-            continue;
-        }
-
-        if inner_zip_file.is_file()
-            && inner_zip_file.name().ends_with(".zip")
-            && inner_zip_file.name().contains(&obj)
-        {
-            // let file_info = info.get(i).unwrap();
-            // println!("{:?}", file_info);
-            // let capacity = file_info.inflated_size;
-            let mut inner_zip_data = Vec::with_capacity(cap);
-            // let mut inner_zip_data = Vec::new();
-            inner_zip_file.read_to_end(&mut inner_zip_data)?;
-
-            let mut inner_zip = ZipArchive::new(Cursor::new(&inner_zip_data))?;
-
-            let bar = multi_pb
-                .lock()
-                .unwrap()
-                .add(ProgressBar::new(inner_zip.len() as u64));
-            let msg = inner_zip_file.info();
-            bar.set_message(msg);
-            bar.set_style(
-                ProgressStyle::with_template(
-                    "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
-                )
-                .unwrap()
-                .progress_chars("##-"),
-            );
-
-            let output_file_name = format!("output/{obj}.csv");
-            let _file = File::create(&output_file_name)?;
-            let file = OpenOptions::new()
-                .write(true)
-                .append(true)
-                .open(&output_file_name)?;
-
-            let mut writer = Writer::from_writer(file);
-
-            for j in 0..inner_zip.len() {
-                bar.inc(1);
-
-                let mut inner_file = inner_zip.by_index(j)?;
-                let inner_cap = inner_file.size() as usize;
-
-                let mut contents = String::with_capacity(inner_cap);
-
-                inner_file.read_to_string(&mut contents)?;
-                let bag_stand = BagStand::new(&contents);
-                match bag_stand {
-                    Ok(parsed_bag_stand) => {
-                        let csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
-
-                        csv_data
-                            .into_iter()
-                            .for_each(|element| element.to_csv(&mut writer));
-                    }
-                    Err(error) => {
-                        println!("Error: {error}");
-                    }
-                }
-                contents.clear();
-            }
-            bar.finish();
-            inner_zip_data.clear();
-        }
-    }
-    Ok(())
 }
 
 trait Info {

@@ -1,8 +1,5 @@
 // #![allow(unused)]
-
-#[cfg(feature = "dhat-heap")]
-#[global_allocator]
-static ALLOC: dhat::Alloc = dhat::Alloc;
+#![warn(clippy::all, clippy::pedantic, clippy::restriction)]
 
 mod args;
 mod bag;
@@ -10,7 +7,7 @@ mod helpers;
 mod work_dir;
 use args::{BagObjects, EntityType, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
-use helpers::zip_seek::{libdeflate, read_nested_zip};
+use helpers::zip_seek::libdeflate;
 use indicatif::MultiProgress;
 use memmap2::Mmap;
 use rayon::prelude::*;
@@ -22,8 +19,6 @@ use std::time::Instant;
 use work_dir::new_folder;
 
 fn main() {
-    #[cfg(feature = "dhat-heap")]
-    let _profiler = dhat::Profiler::new_heap();
     let now = Instant::now();
     let cli = NLExtractArgs::parse();
 
