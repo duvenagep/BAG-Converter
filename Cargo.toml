@@ -7,7 +7,7 @@ description = "A general purpose open source CLI to convert the Dutch LVBAG data
 repository = "https://github.com/duvenagep/BAG-Converter"
 readme = "README.md"
 license = "MIT"
-keywords = ["lvbag", "PDOK", "Kadaster", "CLI", "Clap", "quick-xml"]
+keywords = ["lvbag", "BAG", "PDOK", "Kadaster", "CLI", "Clap", "quick-xml"]
 categories = ["cli", "utility"]
 edition = "2021"
 
