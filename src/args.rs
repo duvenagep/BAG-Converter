@@ -4,19 +4,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 #[command(author, version, about, long_about = None)]
 pub struct NLExtractArgs {
     #[clap(subcommand)]
-    pub entity_type: EntityType,
-}
-
-#[derive(Debug, Subcommand)]
-pub enum EntityType {
-    /// Specify LVBAG (Landelijke Voorziening Basisregistratie Adressen en Gebouwen) BAG 2.0 Extract download URL and destination folder
-    Lvbag(LVBAGCommand),
-}
-
-#[derive(Debug, Args)]
-pub struct LVBAGCommand {
-    #[clap(subcommand)]
-    pub command: LVBAGSubCommand,
+    pub entity_type: LVBAGSubCommand,
 }
 
 #[derive(Debug, Subcommand)]
@@ -26,6 +14,9 @@ pub enum LVBAGSubCommand {
 
     /// Parse BAG 2.0 Extract
     Parse(ParseLvbag),
+
+    /// Info BAG 2.0 Extract
+    Info,
 }
 
 #[derive(Debug, Args)]

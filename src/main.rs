@@ -5,7 +5,7 @@ mod args;
 mod bag;
 mod helpers;
 mod work_dir;
-use args::{BagObjects, EntityType, LVBAGSubCommand, NLExtractArgs};
+use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
 use helpers::zip_seek::libdeflate;
 use indicatif::MultiProgress;
@@ -23,65 +23,67 @@ fn main() {
     let cli = NLExtractArgs::parse();
 
     match cli.entity_type {
-        EntityType::Lvbag(c) => match c.command {
-            LVBAGSubCommand::Download(u) => {
-                let url = u.url;
-                let workdir = u.destination_folder;
+        // EntityType::Lvbag(c) => match c.command {
+        LVBAGSubCommand::Download(u) => {
+            let url = u.url;
+            let workdir = u.destination_folder;
 
-                println!("URL: {}", &url);
-                println!("Destination folder: {}", &workdir);
+            println!("URL: {}", &url);
+            println!("Destination folder: {}", &workdir);
 
-                let _temp_folder = new_folder(&workdir);
-            }
+            let _temp_folder = new_folder(&workdir);
+        }
 
-            LVBAGSubCommand::Parse(parse) => {
-                let _output_folder = new_folder("output");
-                let path = &parse.file;
-                let file = File::open(path).expect("failed to open the file");
+        LVBAGSubCommand::Parse(parse) => {
+            let _output_folder = new_folder("output");
+            let path = &parse.file;
+            let file = File::open(path).expect("failed to open the file");
 
-                let mmap = unsafe { Mmap::map(&file).expect("failed to map the file") };
-                println!("{:?}", &parse);
+            let mmap = unsafe { Mmap::map(&file).expect("failed to map the file") };
+            println!("{:?}", &parse);
 
-                match parse.bag_object {
-                    None => {
-                        println!("Parsing all");
-                        let obj = vec![
-                            BagObjects::Wpl,
-                            BagObjects::Lig,
-                            BagObjects::Opr,
-                            BagObjects::Num,
-                            BagObjects::Sta,
-                            BagObjects::Vbo,
-                            BagObjects::Pnd,
-                        ];
+            match parse.bag_object {
+                None => {
+                    println!("Parsing all");
+                    let obj = vec![
+                        BagObjects::Wpl,
+                        BagObjects::Lig,
+                        BagObjects::Opr,
+                        BagObjects::Num,
+                        BagObjects::Sta,
+                        BagObjects::Vbo,
+                        BagObjects::Pnd,
+                    ];
 
-                        let multi_pb = Arc::new(Mutex::new(MultiProgress::new()));
+                    let multi_pb = Arc::new(Mutex::new(MultiProgress::new()));
 
-                        obj.into_par_iter().for_each(|o| {
+                    obj.into_par_iter().for_each(|o| {
+                        let _ = libdeflate(&mmap[..], o.to_string(), &multi_pb);
+                    });
+                }
+
+                Some(list) => {
+                    let multi_pb = Arc::new(Mutex::new(MultiProgress::new()));
+                    let set: HashSet<_> = list.into_iter().collect();
+
+                    set.into_par_iter().for_each(|o| match o {
+                        BagObjects::Lig
+                        | BagObjects::Num
+                        | BagObjects::Opr
+                        | BagObjects::Pnd
+                        | BagObjects::Sta
+                        | BagObjects::Vbo
+                        | BagObjects::Wpl => {
+                            println!("Parsing {:?}", &o);
                             let _ = libdeflate(&mmap[..], o.to_string(), &multi_pb);
-                        });
-                    }
-
-                    Some(list) => {
-                        let multi_pb = Arc::new(Mutex::new(MultiProgress::new()));
-                        let set: HashSet<_> = list.into_iter().collect();
-
-                        set.into_par_iter().for_each(|o| match o {
-                            BagObjects::Lig
-                            | BagObjects::Num
-                            | BagObjects::Opr
-                            | BagObjects::Pnd
-                            | BagObjects::Sta
-                            | BagObjects::Vbo
-                            | BagObjects::Wpl => {
-                                println!("Parsing {:?}", &o);
-                                let _ = libdeflate(&mmap[..], o.to_string(), &multi_pb);
-                            }
-                        });
-                    }
+                        }
+                    });
                 }
             }
-        },
+        }
+        LVBAGSubCommand::Info => {
+            todo!()
+        } // },
     }
 
     let elapsed = now.elapsed();
