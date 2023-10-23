@@ -4,6 +4,7 @@
 mod args;
 mod bag;
 mod helpers;
+mod input;
 mod work_dir;
 use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
@@ -21,9 +22,9 @@ use work_dir::new_folder;
 fn main() {
     let now = Instant::now();
     let cli = NLExtractArgs::parse();
+    println!("{:?}", cli);
 
     match cli.entity_type {
-        // EntityType::Lvbag(c) => match c.command {
         LVBAGSubCommand::Download(u) => {
             let url = u.url;
             let workdir = u.destination_folder;
@@ -83,7 +84,7 @@ fn main() {
         }
         LVBAGSubCommand::Info => {
             todo!()
-        } // },
+        }
     }
 
     let elapsed = now.elapsed();
