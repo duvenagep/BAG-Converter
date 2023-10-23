@@ -1,7 +1,7 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about, long_about = None, help_template = HELP_TEMPLATE)]
 pub struct NLExtractArgs {
     #[clap(subcommand)]
     pub entity_type: LVBAGSubCommand,
@@ -89,3 +89,28 @@ impl ToString for BagObjects {
         }
     }
 }
+
+const HELP_TEMPLATE: &str = r#"
+{bin} {version}
+{about}
+
+USAGE:
+    {usage} <COMMAND>
+
+SUBCOMMANDS:
+{subcommands}
+
+    try "{usage} -h" to get more info about a specific tool
+
+OPTIONS:
+{options}
+
+EXAMPLES:
+    {bin} download -u https://service.pdok.nl/kadaster/adressen/atom/v1_0/downloads/lvbag-extract-nl.zip -d /home/documents/nlx
+    {bin} parse -l lvbag-extract-nl.zip
+    {bin} parse -b sta lig vbo -l lvbag-extract-nl.zip
+    {bin} parse -b sta lig vbo -l lvbag-extract-nl.zip -f SHAPEFILE
+    {bin} parse -b sta lig vbo -l lvbag-extract-nl.zip -f SHAPEFILE -p EPSG:4632
+    {bin} parse -b sta lig vbo -l lvbag-extract-nl.zip -f SHAPEFILE -p EPSG:4632 -k a,b,c,d,e,f
+    {bin} parse -b sta lig vbo -l lvbag-extract-nl.zip -f SHAPEFILE -p EPSG:4632 -e g,h,i
+    {bin} info -l lvbag-extract-nl.zip"#;
