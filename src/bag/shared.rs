@@ -63,7 +63,7 @@ pub struct HeeftAlsHoofdadres {
 #[derive(Deserialize)]
 pub struct HeeftAlsNevenadres {
     #[serde(rename = "heeftAlsNevenadres")]
-    pub nummeraanduidingref: Option<NummeraanduidingRef>,
+    pub nummeraanduidingref: NummeraanduidingRef,
 }
 
 #[derive(Deserialize)]

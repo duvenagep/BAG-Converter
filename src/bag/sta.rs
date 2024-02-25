@@ -20,11 +20,11 @@ pub struct Standplaats {
     pub documentnummer: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Sta {
     pub hoofdadresNummeraanduidingRef: String,
-    // pub nevenadresNummeraanduidingRef: String,
+    pub nevenadresNummeraanduidingRef: String,
     pub identificatie: String,
     pub status: String,
     pub geconstateerd: String,
@@ -46,10 +46,13 @@ pub fn to_sta(sta: Standplaats) -> Sta {
             .heeftalshoofdadres
             .nummeraanduidingref
             .nummeraanduidingref,
-        // nevenadresNummeraanduidingRef: match sta.heeftalsnevenadres {
-        //     Some(neven_adress) => neven_adress,
-        //     None => todo!(),
-        // },
+        nevenadresNummeraanduidingRef: match sta.heeftalsnevenadres {
+            Some(neven_adress) => neven_adress
+                .into_iter()
+                .map(|n| n.nummeraanduidingref.nummeraanduidingref)
+                .collect(),
+            None => String::new(),
+        },
         identificatie: sta.identificatie.identificatie,
         status: sta.status,
         geconstateerd: sta.geconstateerd,

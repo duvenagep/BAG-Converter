@@ -20,11 +20,11 @@ pub struct Ligplaats {
     pub documentnummer: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Lig {
     pub hoofdadresNummeraanduidingRef: String,
-    // pub nevenadresNummeraanduidingRef: Vec<HeeftAlsNevenadres>,
+    pub nevenadresNummeraanduidingRef: String,
     pub identificatie: String,
     pub status: String,
     pub geconstateerd: String,
@@ -46,10 +46,13 @@ pub fn to_lig(lig: Ligplaats) -> Lig {
             .heeftalshoofdadres
             .nummeraanduidingref
             .nummeraanduidingref,
-        // nevenadresNummeraanduidingRef: match lig.heeftalsnevenadres {
-        //     Some(neven_adress) => neven_adress,
-        //     None => todo!(),
-        // },
+        nevenadresNummeraanduidingRef: match lig.heeftalsnevenadres {
+            Some(neven_adress) => neven_adress
+                .into_iter()
+                .map(|n| n.nummeraanduidingref.nummeraanduidingref)
+                .collect(),
+            None => todo!(),
+        },
         identificatie: lig.identificatie.identificatie,
         status: lig.status,
         geconstateerd: lig.geconstateerd,

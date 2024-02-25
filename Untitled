@@ -1,33 +1,17 @@
 use geo::{coord, Coord, LineString, Point, Polygon};
-use proj::Proj;
 use serde::Deserialize;
-use std::cell::RefCell;
-
-thread_local! {
-    // Thread-local variable for the Proj transformer
-    static TRANSFORMER: RefCell<Proj> = RefCell::new(transformer("EPSG:28992", "EPSG:4326"));
-}
-
-pub fn transformer(from: &str, to: &str) -> Proj {
-    Proj::new_known_crs(from, to, None).unwrap()
-}
 
 pub fn deserialize_pos<'de, D>(deserializer: D) -> Result<Point, D::Error>
 where
     D: serde::Deserializer<'de>,
-{
+{  
     let coordinates = String::deserialize(deserializer)?;
     let values: Vec<f64> = coordinates
         .split_whitespace()
         .map(|coord| coord.parse::<f64>().unwrap())
         .collect();
 
-    let vbo_point = TRANSFORMER.with(|trans| {
-        let transformer = trans.borrow();
-        transformer
-            .convert(Point::new(values[0], values[1]))
-            .unwrap()
-    });
+    let vbo_point = Point::new(values[0], values[1]);
 
     Ok(vbo_point)
 }
@@ -37,7 +21,7 @@ where
     D: serde::Deserializer<'de>,
 {
     let coordinates = String::deserialize(deserializer)?;
-    let mut coords: Vec<Coord> = coordinates
+    let coords: Vec<Coord> = coordinates
         .split_whitespace()
         .map(|coord| coord.parse::<f64>().unwrap())
         .filter(|&c| c != 0.0)
@@ -45,11 +29,6 @@ where
         .chunks(2)
         .map(|chunk| coord! { x:chunk[0], y:chunk[1]})
         .collect();
-
-    let _transformed = TRANSFORMER.with(|trans| {
-        let transformer = trans.borrow();
-        transformer.convert_array(&mut coords).unwrap()
-    });
 
     let polygon = Polygon::new(LineString::new(coords), vec![]);
 

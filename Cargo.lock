@@ -1402,6 +1402,7 @@ dependencies = [
  "geo",
  "human_bytes",
  "indicatif",
+ "lazy_static",
  "libdeflater",
  "memmap2",
  "polars",
