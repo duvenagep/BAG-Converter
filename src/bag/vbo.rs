@@ -9,6 +9,8 @@ use wkt::ToWkt;
 pub struct Verblijfsobject {
     #[serde(rename = "heeftAlsHoofdadres")]
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
+    #[serde(rename = "heeftAlsNevenadres")]
+    pub heeftalsnevenadres: Option<HeeftAlsNevenadres>,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
     pub geometrie: Geom,
@@ -28,14 +30,14 @@ pub struct MaaktDeelUitVan {
     pub pandref: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Vbo {
-    // pub gebruiksdoel: String,
+    pub gebruiksdoel: String,
     pub oppervlakte: String,
     pub hoofdadresNummeraanduidingRef: String,
-    // pub nevenadresNummeraanduidingRef: String,
-    // pub pandRef: String,
+    pub nevenadresNummeraanduidingRef: String,
+    pub pandRef: String,
     pub identificatie: String,
     pub status: String,
     pub geconstateerd: String,
@@ -53,7 +55,7 @@ pub struct Vbo {
 
 pub fn to_vbo(vbo: Verblijfsobject) -> Vbo {
     Vbo {
-        // gebruiksdoel: vbo.gebruiksdoel.first(),
+        gebruiksdoel: vbo.gebruiksdoel.join(", "),
         oppervlakte: match vbo.oppervlakte {
             Some(opper) => opper,
             None => String::new(),
@@ -62,11 +64,16 @@ pub fn to_vbo(vbo: Verblijfsobject) -> Vbo {
             .heeftalshoofdadres
             .nummeraanduidingref
             .nummeraanduidingref,
-        // nevenadresNummeraanduidingRef: match vbo.heeftalsnevenadres {
-        //     Some(neven_adress) => neven_adress,
-        //     None => todo!(),
-        // },
-        // pandRef: vbo.maaktdeelditvan.pandref,
+        nevenadresNummeraanduidingRef: match vbo.heeftalsnevenadres {
+            Some(neven_adress) => neven_adress
+                .nummeraanduidingref
+                .into_iter()
+                .map(|n| n.nummeraanduidingref)
+                .collect::<Vec<_>>()
+                .join(", "),
+            None => String::new(),
+        },
+        pandRef: vbo.maaktdeelditvan.pandref.join(", "),
         identificatie: vbo.identificatie.identificatie,
         status: vbo.status,
         geconstateerd: vbo.geconstateerd,

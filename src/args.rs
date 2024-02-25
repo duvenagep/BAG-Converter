@@ -47,7 +47,7 @@ pub struct ParseLvbag {
     #[arg(short = 'l')]
     pub file: String,
 
-    /// Supported Parse formats for LVBAG XML (POSTGIS, DSV, GEOJSON)
+    /// Supported Parse formats for LVBAG XML (POSTGIS, CSV, GEOJSON, SHAPEFILE)
     #[arg(short, default_value = "CSV")]
     pub format: Option<String>,
 

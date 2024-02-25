@@ -61,6 +61,13 @@ pub fn inflate(bytes: &[u8], buffer: &mut Vec<u8>, start_idx: usize, end_idx: us
         .unwrap();
 }
 
+pub fn should_skip_file(filename: &str) -> bool {
+    let skip_conditions = ["InOnderzoek", "Inactief", "NietBag", "GEM-WPL-RELATIE"];
+    skip_conditions
+        .iter()
+        .any(|condition| filename.contains(condition))
+}
+
 pub trait IsArchive {
     fn is_zipfile_from_bytes(&self) -> bool;
 }

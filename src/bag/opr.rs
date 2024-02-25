@@ -93,7 +93,7 @@ pub fn to_hash(opr: OpenbareRuimte) {
     );
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Opr {
     pub naam: String,

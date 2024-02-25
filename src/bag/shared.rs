@@ -62,8 +62,8 @@ pub struct HeeftAlsHoofdadres {
 
 #[derive(Deserialize)]
 pub struct HeeftAlsNevenadres {
-    #[serde(rename = "heeftAlsNevenadres")]
-    pub nummeraanduidingref: Option<NummeraanduidingRef>,
+    #[serde(rename = "NummeraanduidingRef")]
+    pub nummeraanduidingref: Vec<NummeraanduidingRef>,
 }
 
 #[derive(Deserialize)]

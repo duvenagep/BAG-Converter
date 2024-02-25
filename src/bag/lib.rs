@@ -1,5 +1,4 @@
 use crate::bag::{lig::*, num::*, opr::*, pnd::*, sta::*, vbo::*, wpl::*};
-
 use quick_xml::de::from_str;
 use serde;
 use serde::Deserialize;
@@ -78,7 +77,7 @@ impl BagStand {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub enum CSVStruct {
     Num(Num),
     Lig(Lig),

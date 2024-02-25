@@ -38,7 +38,7 @@ pub struct OpenbareRuimteRef {
 
 /// Intermediate Dataframe Compliant struct
 /// TODO -> Implement Zero Copy optimizations Cow<&str>
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Num {
     pub huisnummer: String,

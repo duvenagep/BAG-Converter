@@ -1,57 +1,58 @@
+// use crate::bag::geometries::transformer;
 use crate::bag::lib::*;
+use crate::input::*;
 use anyhow::{bail, Context};
 use csv::Writer;
 use human_bytes::human_bytes;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use rayon::prelude::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Cursor;
-use std::io::Read;
 use std::sync::Arc;
 use std::sync::Mutex;
 use zip::read::ZipArchive;
 use zip::read::ZipFile;
 
-#[derive(Debug, Clone)]
-struct FileInfo {
-    start: usize,
-    end: usize,
-    inflated_size: usize,
-    name: String,
-}
+// #[derive(Debug, Clone)]
+// struct FileInfo {
+//     start: usize,
+//     end: usize,
+//     inflated_size: usize,
+//     name: String,
+// }
 
-fn archive_info<R: Read + std::io::Seek>(
-    archive: &mut zip::ZipArchive<R>,
-) -> anyhow::Result<Vec<FileInfo>> {
-    let mut info = Vec::with_capacity(archive.len());
-    for i in 0..archive.len() {
-        let file = archive.by_index_raw(i).context("expected zip file")?;
-        if file.compression() != zip::CompressionMethod::DEFLATE {
-            bail!("this test is only for deflated zips");
-        }
+// fn archive_info<R: Read + std::io::Seek>(
+//     archive: &mut zip::ZipArchive<R>,
+// ) -> anyhow::Result<Vec<FileInfo>> {
+//     let mut info = Vec::with_capacity(archive.len());
+//     for i in 0..archive.len() {
+//         let file = archive.by_index_raw(i).context("expected zip file")?;
+//         if file.compression() != zip::CompressionMethod::DEFLATE {
+//             bail!("this test is only for deflated zips");
+//         }
 
-        info.push(FileInfo {
-            start: file.data_start() as usize,
-            end: (file.data_start() + file.compressed_size()) as usize,
-            inflated_size: file.size() as usize,
-            name: file.name().to_owned(),
-        });
-    }
-    Ok(info)
-}
+//         info.push(FileInfo {
+//             start: file.data_start() as usize,
+//             end: (file.data_start() + file.compressed_size()) as usize,
+//             inflated_size: file.size() as usize,
+//             name: file.name().to_owned(),
+//         });
+//     }
+//     Ok(info)
+// }
 
 pub fn libdeflate(
     zip_data: &[u8],
     obj: String,
     multi_pb: &Arc<Mutex<MultiProgress>>,
 ) -> Result<(), anyhow::Error> {
+    // let prj = transformer();
     let reader = Cursor::new(zip_data);
 
     let mut archive = zip::ZipArchive::new(reader).context("unable to parse zip archive")?;
-    let info = archive_info(&mut archive)?;
-    // let out_len = info.iter().map(|x| x.inflated_size).sum();
-    // let mut inflated = vec![0u8; out_len];
-    // let mut inflated_start = 0;
+    // let info = archive_info(&mut archive)?;
+    let info = archive_info(zip_data);
 
     for file in info {
         if should_skip_file(&file.name) {
@@ -75,7 +76,8 @@ pub fn libdeflate(
             }
 
             let mut inner_zip = ZipArchive::new(Cursor::new(&inflated))?;
-            let inner_info = archive_info(&mut inner_zip)?;
+            let inner_info = archive_info(&inflated);
+            // let inner_info = archive_info(&mut inner_zip)?;
 
             let bar = multi_pb
                 .lock()
@@ -116,7 +118,7 @@ pub fn libdeflate(
                 let bag_stand = BagStand::new(inner_string);
                 match bag_stand {
                     Ok(parsed_bag_stand) => {
-                        let csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
+                        let mut csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
 
                         csv_data
                             .into_iter()

@@ -10,7 +10,7 @@ pub struct Ligplaats {
     #[serde(rename = "heeftAlsHoofdadres")]
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     #[serde(rename = "heeftAlsNevenadres")]
-    pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
+    pub heeftalsnevenadres: Option<HeeftAlsNevenadres>,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
     pub geometrie: Geom,
@@ -20,11 +20,11 @@ pub struct Ligplaats {
     pub documentnummer: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Lig {
     pub hoofdadresNummeraanduidingRef: String,
-    // pub nevenadresNummeraanduidingRef: Vec<HeeftAlsNevenadres>,
+    pub nevenadresNummeraanduidingRef: String,
     pub identificatie: String,
     pub status: String,
     pub geconstateerd: String,
@@ -46,10 +46,15 @@ pub fn to_lig(lig: Ligplaats) -> Lig {
             .heeftalshoofdadres
             .nummeraanduidingref
             .nummeraanduidingref,
-        // nevenadresNummeraanduidingRef: match lig.heeftalsnevenadres {
-        //     Some(neven_adress) => neven_adress,
-        //     None => todo!(),
-        // },
+        nevenadresNummeraanduidingRef: match lig.heeftalsnevenadres {
+            Some(neven_adress) => neven_adress
+                .nummeraanduidingref
+                .into_iter()
+                .map(|n| n.nummeraanduidingref)
+                .collect::<Vec<_>>()
+                .join(", "),
+            None => String::new(),
+        },
         identificatie: lig.identificatie.identificatie,
         status: lig.status,
         geconstateerd: lig.geconstateerd,

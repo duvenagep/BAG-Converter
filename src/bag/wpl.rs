@@ -17,7 +17,7 @@ pub struct Woonplaats {
     pub voorkomen: Voorkomen,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
 #[allow(non_snake_case)]
 pub struct Wpl {
     pub naam: String,
