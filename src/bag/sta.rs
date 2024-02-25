@@ -10,7 +10,7 @@ pub struct Standplaats {
     #[serde(rename = "heeftAlsHoofdadres")]
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     #[serde(rename = "heeftAlsNevenadres")]
-    pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
+    pub heeftalsnevenadres: Option<HeeftAlsNevenadres>,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
     pub status: String,
@@ -48,9 +48,11 @@ pub fn to_sta(sta: Standplaats) -> Sta {
             .nummeraanduidingref,
         nevenadresNummeraanduidingRef: match sta.heeftalsnevenadres {
             Some(neven_adress) => neven_adress
+                .nummeraanduidingref
                 .into_iter()
-                .map(|n| n.nummeraanduidingref.nummeraanduidingref)
-                .collect(),
+                .map(|n| n.nummeraanduidingref)
+                .collect::<Vec<_>>()
+                .join(", "),
             None => String::new(),
         },
         identificatie: sta.identificatie.identificatie,

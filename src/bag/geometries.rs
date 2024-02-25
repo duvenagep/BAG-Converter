@@ -1,13 +1,6 @@
 use crate::helpers::deserializers::{deserialize_coords, deserialize_epsg, deserialize_pos};
 use geo::{Point, Polygon as GeoPolygon};
-use proj::Proj;
 use serde::Deserialize;
-
-pub fn transformer() -> Proj {
-    let from = "EPSG:28992";
-    let to = "EPSG:4326";
-    Proj::new_known_crs(&from, &to, None).unwrap()
-}
 
 /// Geometries
 #[derive(Deserialize)]

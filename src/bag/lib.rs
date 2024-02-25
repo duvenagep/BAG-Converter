@@ -1,12 +1,7 @@
-use crate::bag::{geometries::*, lig::*, num::*, opr::*, pnd::*, sta::*, vbo::*, wpl::*};
-use geo::Point;
+use crate::bag::{lig::*, num::*, opr::*, pnd::*, sta::*, vbo::*, wpl::*};
 use quick_xml::de::from_str;
 use serde;
 use serde::Deserialize;
-use std::str::FromStr;
-use wkt::Geometry;
-use wkt::Wkt;
-use wkt::{ToWkt, TryFromWkt};
 
 // Main xml Structure shared by all Enum Variants
 #[derive(Deserialize)]
@@ -196,15 +191,4 @@ impl From<BagStand> for Vec<CSVStruct> {
             })
             .collect()
     }
-}
-
-pub fn project(data: &mut Vec<CSVStruct>) {
-    let t = transformer();
-    data.iter_mut().for_each(|element| match element {
-        CSVStruct::Vbo(g) => {
-            let point: Point = Point::try_from_wkt_str(g.geometry.as_str()).unwrap();
-            g.geometry = t.convert(point).unwrap().wkt_string();
-        }
-        _ => todo!(),
-    });
 }

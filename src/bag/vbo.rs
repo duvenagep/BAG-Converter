@@ -10,7 +10,7 @@ pub struct Verblijfsobject {
     #[serde(rename = "heeftAlsHoofdadres")]
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     #[serde(rename = "heeftAlsNevenadres")]
-    pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
+    pub heeftalsnevenadres: Option<HeeftAlsNevenadres>,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
     pub geometrie: Geom,
@@ -55,7 +55,7 @@ pub struct Vbo {
 
 pub fn to_vbo(vbo: Verblijfsobject) -> Vbo {
     Vbo {
-        gebruiksdoel: vbo.gebruiksdoel.join(","),
+        gebruiksdoel: vbo.gebruiksdoel.join(", "),
         oppervlakte: match vbo.oppervlakte {
             Some(opper) => opper,
             None => String::new(),
@@ -66,12 +66,14 @@ pub fn to_vbo(vbo: Verblijfsobject) -> Vbo {
             .nummeraanduidingref,
         nevenadresNummeraanduidingRef: match vbo.heeftalsnevenadres {
             Some(neven_adress) => neven_adress
+                .nummeraanduidingref
                 .into_iter()
-                .map(|n| n.nummeraanduidingref.nummeraanduidingref)
-                .collect(),
-            None => todo!(),
+                .map(|n| n.nummeraanduidingref)
+                .collect::<Vec<_>>()
+                .join(", "),
+            None => String::new(),
         },
-        pandRef: vbo.maaktdeelditvan.pandref.join(","),
+        pandRef: vbo.maaktdeelditvan.pandref.join(", "),
         identificatie: vbo.identificatie.identificatie,
         status: vbo.status,
         geconstateerd: vbo.geconstateerd,

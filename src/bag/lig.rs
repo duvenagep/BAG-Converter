@@ -10,7 +10,7 @@ pub struct Ligplaats {
     #[serde(rename = "heeftAlsHoofdadres")]
     pub heeftalshoofdadres: HeeftAlsHoofdadres,
     #[serde(rename = "heeftAlsNevenadres")]
-    pub heeftalsnevenadres: Option<Vec<HeeftAlsNevenadres>>,
+    pub heeftalsnevenadres: Option<HeeftAlsNevenadres>,
     pub voorkomen: Voorkomen,
     pub identificatie: Identity,
     pub geometrie: Geom,
@@ -48,10 +48,12 @@ pub fn to_lig(lig: Ligplaats) -> Lig {
             .nummeraanduidingref,
         nevenadresNummeraanduidingRef: match lig.heeftalsnevenadres {
             Some(neven_adress) => neven_adress
+                .nummeraanduidingref
                 .into_iter()
-                .map(|n| n.nummeraanduidingref.nummeraanduidingref)
-                .collect(),
-            None => todo!(),
+                .map(|n| n.nummeraanduidingref)
+                .collect::<Vec<_>>()
+                .join(", "),
+            None => String::new(),
         },
         identificatie: lig.identificatie.identificatie,
         status: lig.status,

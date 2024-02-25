@@ -1,4 +1,4 @@
-use crate::bag::geometries::transformer;
+// use crate::bag::geometries::transformer;
 use crate::bag::lib::*;
 use crate::input::*;
 use anyhow::{bail, Context};
@@ -9,7 +9,6 @@ use rayon::prelude::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Cursor;
-use std::io::Read;
 use std::sync::Arc;
 use std::sync::Mutex;
 use zip::read::ZipArchive;
@@ -48,16 +47,12 @@ pub fn libdeflate(
     obj: String,
     multi_pb: &Arc<Mutex<MultiProgress>>,
 ) -> Result<(), anyhow::Error> {
-    let prj = transformer();
+    // let prj = transformer();
     let reader = Cursor::new(zip_data);
 
     let mut archive = zip::ZipArchive::new(reader).context("unable to parse zip archive")?;
     // let info = archive_info(&mut archive)?;
     let info = archive_info(zip_data);
-
-    // let out_len = info.iter().map(|x| x.inflated_size).sum();
-    // let mut inflated = vec![0u8; out_len];
-    // let mut inflated_start = 0;
 
     for file in info {
         if should_skip_file(&file.name) {
@@ -124,7 +119,6 @@ pub fn libdeflate(
                 match bag_stand {
                     Ok(parsed_bag_stand) => {
                         let mut csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
-                        // project(&mut csv_data);
 
                         csv_data
                             .into_iter()
