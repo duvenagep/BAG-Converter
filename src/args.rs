@@ -1,7 +1,8 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Parser)]
-#[command(author, version, about, long_about = None, help_template = HELP_TEMPLATE)]
+// #[command(author, version, about, long_about = None, help_template = HELP_TEMPLATE)]
+#[command(author, version, about, long_about = None)]
 pub struct NLExtractArgs {
     #[clap(subcommand)]
     pub entity_type: LVBAGSubCommand,
@@ -47,9 +48,9 @@ pub struct ParseLvbag {
     #[arg(short = 'l')]
     pub file: String,
 
-    /// Supported Parse formats for LVBAG XML (POSTGIS, CSV, GEOJSON, SHAPEFILE)
-    #[arg(short, default_value = "CSV")]
-    pub format: Option<String>,
+    /// Supported Parse formats for LVBAG XML
+    #[arg(short)]
+    pub format: Option<OutputMode>,
 
     /// Any supported projection (EPSG:4632, EPSG:28892)
     #[arg(short, default_value = "EPSG:28892")]
@@ -73,6 +74,19 @@ pub enum BagObjects {
     Pnd,
     Num,
     Sta,
+}
+
+#[derive(Debug, Copy, Clone, Default, PartialEq, Eq, Hash, PartialOrd, Ord, ValueEnum)]
+pub enum OutputMode {
+    #[default]
+    CSV,
+    GEOJSON,
+    SHAPEFILE,
+    GEODATABASE,
+    GEOPACKAGE,
+    KML,
+    GEOBUF,
+    POSTGIS,
 }
 
 impl ToString for BagObjects {

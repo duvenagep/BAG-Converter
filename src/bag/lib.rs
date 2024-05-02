@@ -88,6 +88,22 @@ pub enum CSVStruct {
     Wpl(Wpl),
 }
 
+pub trait Write {
+    fn write_csv(&self, wtr: &mut csv::Writer<std::fs::File>);
+}
+
+impl Write for CSVStruct {
+    fn write_csv(&self, wtr: &mut csv::Writer<std::fs::File>) {
+        match self {
+            Self::Num(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            _ => todo!(),
+        }
+    }
+}
+
 impl CSVStruct {
     pub fn to_csv(&self, wtr: &mut csv::Writer<std::fs::File>) {
         use CSVStruct::*;

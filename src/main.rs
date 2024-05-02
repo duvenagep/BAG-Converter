@@ -1,5 +1,6 @@
 // #![allow(unused)]
 #![warn(clippy::all, clippy::pedantic, clippy::restriction)]
+// #![warn(missing_docs)]
 
 mod args;
 mod bag;
@@ -9,17 +10,13 @@ mod work_dir;
 
 use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
-use helpers::deserializers::transformer;
 use helpers::zip_seek::libdeflate;
 use indicatif::MultiProgress;
 use memmap2::Mmap;
-use proj::Proj;
 use rayon::prelude::*;
-use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fs::File;
 use std::sync::{Arc, Mutex};
-
 use std::time::Instant;
 use work_dir::new_folder;
 

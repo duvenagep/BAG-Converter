@@ -48,9 +48,9 @@ pub fn libdeflate(
     multi_pb: &Arc<Mutex<MultiProgress>>,
 ) -> Result<(), anyhow::Error> {
     // let prj = transformer();
-    let reader = Cursor::new(zip_data);
+    // let reader = Cursor::new(zip_data);
 
-    let mut archive = zip::ZipArchive::new(reader).context("unable to parse zip archive")?;
+    // let mut archive = zip::ZipArchive::new(reader).context("unable to parse zip archive")?;
     // let info = archive_info(&mut archive)?;
     let info = archive_info(zip_data);
 
