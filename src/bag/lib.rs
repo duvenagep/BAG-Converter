@@ -1,5 +1,7 @@
 use crate::bag::{lig::*, num::*, opr::*, pnd::*, sta::*, vbo::*, wpl::*};
+use crate::schema::Schema;
 use quick_xml::de::from_str;
+
 use serde;
 use serde::Deserialize;
 

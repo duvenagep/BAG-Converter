@@ -49,7 +49,7 @@ pub struct ParseLvbag {
     pub file: String,
 
     /// Supported Parse formats for LVBAG XML
-    #[arg(short)]
+    #[arg(short, value_enum)]
     pub format: Option<OutputMode>,
 
     /// Any supported projection (EPSG:4632, EPSG:28892)

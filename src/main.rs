@@ -6,7 +6,9 @@ mod args;
 mod bag;
 mod helpers;
 mod input;
+mod schema;
 mod work_dir;
+mod writer;
 
 use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
