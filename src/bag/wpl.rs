@@ -1,5 +1,6 @@
 use crate::bag::geometries::*;
 use crate::bag::shared::*;
+use geo::MultiPolygon;
 use serde;
 use serde::{Deserialize, Serialize};
 use wkt::ToWkt;
@@ -84,19 +85,15 @@ pub fn to_wpl(wpl: Woonplaats) -> Wpl {
                 .attributes
                 .pos_list
                 .wkt_string(),
-            Geometry::MultiVlak(mvlak) => mvlak
-                .multi_surface
-                .surface_member
-                .into_iter()
-                .map(|p| {
-                    p.polygon
-                        .exterior
-                        .linear_ring
-                        .attributes
-                        .pos_list
-                        .wkt_string()
-                })
-                .collect(),
+            Geometry::MultiVlak(mvlak) => MultiPolygon::new(
+                mvlak
+                    .multi_surface
+                    .surface_member
+                    .into_iter()
+                    .map(|p| p.polygon.exterior.linear_ring.attributes.pos_list)
+                    .collect::<Vec<_>>(),
+            )
+            .wkt_string(),
         },
     }
 }

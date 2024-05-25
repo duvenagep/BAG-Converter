@@ -1,5 +1,7 @@
 use crate::bag::{lig::*, num::*, opr::*, pnd::*, sta::*, vbo::*, wpl::*};
+use crate::schema::Schema;
 use quick_xml::de::from_str;
+
 use serde;
 use serde::Deserialize;
 
@@ -86,6 +88,22 @@ pub enum CSVStruct {
     Sta(Sta),
     Vbo(Vbo),
     Wpl(Wpl),
+}
+
+pub trait Write {
+    fn write_csv(&self, wtr: &mut csv::Writer<std::fs::File>);
+}
+
+impl Write for CSVStruct {
+    fn write_csv(&self, wtr: &mut csv::Writer<std::fs::File>) {
+        match self {
+            Self::Num(data) => {
+                wtr.serialize(data).unwrap();
+                wtr.flush().unwrap();
+            }
+            _ => todo!(),
+        }
+    }
 }
 
 impl CSVStruct {

@@ -5,8 +5,17 @@ use std::ops::Deref;
 use std::str::from_utf8;
 use zip::ZipArchive;
 
+/// Mmap File Loader for fast repetitive reads
+///
+/// Memory-Mapped File loader provider fast read for constrained memory environments
+/// The Base LVBAG extract is 3.18 GB compressed and > 100 GB Uncompressed
+/// Ideally we want to process this data without needing to fist decompress
+///
+
+/// The main Input Struct as a safe wrapper around Unsafe Mmap
 #[derive(Debug)]
 pub struct Input {
+    ///
     pub mmap: Mmap,
 }
 
@@ -72,18 +81,9 @@ pub trait IsArchive {
     fn is_zipfile_from_bytes(&self) -> bool;
 }
 
-impl IsArchive for &[u8] {
+impl<T: AsRef<[u8]>> IsArchive for T {
     fn is_zipfile_from_bytes(&self) -> bool {
-        if self.len() >= 4 && self[0..4] == [0x50, 0x4B, 0x03, 0x04] {
-            return true;
-        }
-        false
-    }
-}
-
-impl IsArchive for Vec<u8> {
-    fn is_zipfile_from_bytes(&self) -> bool {
-        if self.len() >= 4 && self[0..4] == [0x50, 0x4B, 0x03, 0x04] {
+        if self.as_ref().len() >= 4 && self.as_ref()[0..4] == [0x50, 0x4B, 0x03, 0x04] {
             return true;
         }
         false

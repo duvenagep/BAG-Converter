@@ -32,6 +32,7 @@ proj = "0.27.0"
 quick-xml = { version = "0.28.2", features = [ "serialize"] }
 rayon = "1.7.0"
 serde = { version = "1.0.162", features = ["derive"] }
+thiserror = "1.0.61"
 unroll = "0.1.5"
 wkt = { version = "0.10.3", features = ["serde"] }
 zip = {version = "0.6.5", default-features = true}

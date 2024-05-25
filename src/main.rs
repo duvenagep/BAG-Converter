@@ -1,25 +1,25 @@
 // #![allow(unused)]
 #![warn(clippy::all, clippy::pedantic, clippy::restriction)]
+// #![warn(missing_docs)]
 
 mod args;
 mod bag;
 mod helpers;
 mod input;
+mod schema;
 mod work_dir;
+mod writer;
 
 use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
-use helpers::deserializers::transformer;
+use helpers::deserializers::set_transformer;
 use helpers::zip_seek::libdeflate;
 use indicatif::MultiProgress;
 use memmap2::Mmap;
-use proj::Proj;
 use rayon::prelude::*;
-use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fs::File;
 use std::sync::{Arc, Mutex};
-
 use std::time::Instant;
 use work_dir::new_folder;
 
@@ -41,6 +41,10 @@ fn main() {
 
         LVBAGSubCommand::Parse(parse) => {
             let _output_folder = new_folder("output");
+            if let Some(proj) = &parse.projection {
+                set_transformer("EPSG:28992", proj.as_str());
+            }
+
             let path = &parse.file;
             let file = File::open(path).expect("failed to open the file");
 
