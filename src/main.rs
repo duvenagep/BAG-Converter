@@ -12,6 +12,7 @@ mod writer;
 
 use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
+use helpers::deserializers::set_transformer;
 use helpers::zip_seek::libdeflate;
 use indicatif::MultiProgress;
 use memmap2::Mmap;
@@ -40,6 +41,10 @@ fn main() {
 
         LVBAGSubCommand::Parse(parse) => {
             let _output_folder = new_folder("output");
+            if let Some(proj) = &parse.projection {
+                set_transformer("EPSG:28992", proj.as_str());
+            }
+
             let path = &parse.file;
             let file = File::open(path).expect("failed to open the file");
 

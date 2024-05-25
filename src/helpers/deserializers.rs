@@ -8,6 +8,14 @@ thread_local! {
     static TRANSFORMER: RefCell<Proj> = RefCell::new(transformer("EPSG:28992", "EPSG:4326"));
 }
 
+pub fn set_transformer(from_crs: &str, to_cr: &str) {
+    TRANSFORMER.with(|t| *t.borrow_mut() = Proj::new_known_crs(from_crs, to_cr, None).unwrap())
+}
+
+// fn get_transformer() -> Proj {
+//     TRANSFORMER.with_borrow(|t| *t.clone())
+// }
+
 pub fn transformer(from: &str, to: &str) -> Proj {
     Proj::new_known_crs(from, to, None).unwrap()
 }
