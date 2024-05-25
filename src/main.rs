@@ -4,6 +4,7 @@
 
 mod args;
 mod bag;
+mod error;
 mod helpers;
 mod input;
 mod schema;
@@ -12,6 +13,7 @@ mod writer;
 
 use args::{BagObjects, LVBAGSubCommand, NLExtractArgs};
 use clap::Parser;
+use error::BagResult;
 use helpers::deserializers::set_transformer;
 use helpers::zip_seek::libdeflate;
 use indicatif::MultiProgress;
@@ -23,7 +25,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use work_dir::new_folder;
 
-fn main() {
+fn main() -> BagResult<()> {
     let now = Instant::now();
     let cli = NLExtractArgs::parse();
     println!("{:?}", cli);
@@ -97,4 +99,5 @@ fn main() {
 
     let elapsed = now.elapsed();
     println!("Elapsed: {elapsed:.4?}");
+    Ok(())
 }
