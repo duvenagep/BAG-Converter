@@ -1,3 +1,4 @@
+use crate::error::BagResult;
 use memmap2::Mmap;
 use std::fs::File;
 use std::io::Cursor;
@@ -15,7 +16,6 @@ use zip::ZipArchive;
 /// The main Input Struct as a safe wrapper around Unsafe Mmap
 #[derive(Debug)]
 pub struct Input {
-    ///
     pub mmap: Mmap,
 }
 
@@ -28,11 +28,11 @@ pub struct FileInfo {
 }
 
 impl Input {
-    pub fn new(path: &str) -> Self {
-        let file = File::open(path).unwrap();
-        let mmap = unsafe { Mmap::map(&file).expect("Failed to memory map file") };
+    pub fn new(path: &str) -> BagResult<Self> {
+        let file = File::open(path)?;
+        let mmap = unsafe { Mmap::map(&file)? };
 
-        Self { mmap }
+        Ok(Self { mmap })
     }
 
     pub fn to_file(&self) -> &str {
