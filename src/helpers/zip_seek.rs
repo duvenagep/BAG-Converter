@@ -1,5 +1,6 @@
 // use crate::bag::geometries::transformer;
 use crate::bag::lib::*;
+use crate::error::BagResult;
 use crate::input::*;
 use anyhow::{bail, Context};
 use csv::Writer;
@@ -46,13 +47,13 @@ pub fn libdeflate(
     zip_data: &[u8],
     obj: String,
     multi_pb: &Arc<Mutex<MultiProgress>>,
-) -> Result<(), anyhow::Error> {
+) -> BagResult<()> {
     // let prj = transformer();
     // let reader = Cursor::new(zip_data);
 
     // let mut archive = zip::ZipArchive::new(reader).context("unable to parse zip archive")?;
     // let info = archive_info(&mut archive)?;
-    let info = archive_info(zip_data);
+    let info = archive_info(zip_data)?;
 
     for file in info {
         if should_skip_file(&file.name) {
@@ -64,19 +65,13 @@ pub fn libdeflate(
             let mut inflated = vec![0u8; out_len];
             let inflated_start = 0;
 
-            let written = libdeflater::Decompressor::new()
-                .deflate_decompress(
-                    &zip_data[file.start..file.end],
-                    &mut inflated[inflated_start..],
-                )
-                .map_err(|e| anyhow::anyhow!("unable to libdeflate: {}", e))?;
-
-            if written != file.inflated_size {
-                bail!("unexpected number of bytes written");
-            }
+            let written = libdeflater::Decompressor::new().deflate_decompress(
+                &zip_data[file.start..file.end],
+                &mut inflated[inflated_start..],
+            )?;
 
             let mut inner_zip = ZipArchive::new(Cursor::new(&inflated))?;
-            let inner_info = archive_info(&inflated);
+            let inner_info = archive_info(&inflated)?;
             // let inner_info = archive_info(&mut inner_zip)?;
 
             let bar = multi_pb
@@ -107,12 +102,10 @@ pub fn libdeflate(
                 let mut inner_inflated = vec![0u8; inner_out_len];
                 let inner_inflated_start = 0;
 
-                let _inner_written = libdeflater::Decompressor::new()
-                    .deflate_decompress(
-                        &inflated[inner_file.start..inner_file.end],
-                        &mut inner_inflated[inner_inflated_start..],
-                    )
-                    .map_err(|e| anyhow::anyhow!("unable to libdeflate: {}", e))?;
+                let _inner_written = libdeflater::Decompressor::new().deflate_decompress(
+                    &inflated[inner_file.start..inner_file.end],
+                    &mut inner_inflated[inner_inflated_start..],
+                )?;
 
                 let inner_string = std::str::from_utf8(&inner_inflated).unwrap();
                 let bag_stand = BagStand::new(inner_string);
