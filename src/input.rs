@@ -1,3 +1,4 @@
+use crate::error::BagResult;
 use memmap2::Mmap;
 use std::fs::File;
 use std::io::Cursor;
@@ -15,7 +16,6 @@ use zip::ZipArchive;
 /// The main Input Struct as a safe wrapper around Unsafe Mmap
 #[derive(Debug)]
 pub struct Input {
-    ///
     pub mmap: Mmap,
 }
 
@@ -28,32 +28,29 @@ pub struct FileInfo {
 }
 
 impl Input {
-    pub fn new(path: &str) -> Self {
-        let file = File::open(path).unwrap();
-        let mmap = unsafe { Mmap::map(&file).expect("Failed to memory map file") };
+    pub fn new(path: &str) -> BagResult<Self> {
+        let file = File::open(path)?;
+        let mmap = unsafe { Mmap::map(&file)? };
 
-        Self { mmap }
+        Ok(Self { mmap })
     }
 
-    pub fn to_file(&self) -> &str {
-        let file_data = from_utf8(&*self.mmap.deref());
-        match file_data {
-            Ok(data) => data,
-            Err(_) => "error",
-        }
+    pub fn to_file(&self) -> BagResult<&str> {
+        let file_data = from_utf8(&*self.mmap.deref())?;
+        Ok(file_data)
     }
 }
 
-pub fn to_archive(bytes: &[u8]) -> ZipArchive<Cursor<&[u8]>> {
-    zip::ZipArchive::new(Cursor::new(&bytes[..])).unwrap()
+pub fn to_archive(bytes: &[u8]) -> BagResult<ZipArchive<Cursor<&[u8]>>> {
+    Ok(zip::ZipArchive::new(Cursor::new(&bytes[..]))?)
 }
 
-pub fn archive_info(bytes: &[u8]) -> Vec<FileInfo> {
-    let mut archive = to_archive(bytes);
+pub fn archive_info(bytes: &[u8]) -> BagResult<Vec<FileInfo>> {
+    let mut archive = to_archive(bytes)?;
     let mut info: Vec<FileInfo> = Vec::with_capacity(archive.len());
 
     for i in 0..archive.len() {
-        let inner_file = archive.by_index(i).unwrap();
+        let inner_file = archive.by_index(i)?;
         info.push(FileInfo {
             start: inner_file.data_start() as usize,
             end: (inner_file.data_start() + inner_file.compressed_size()) as usize,
@@ -61,13 +58,13 @@ pub fn archive_info(bytes: &[u8]) -> Vec<FileInfo> {
             name: inner_file.name().to_owned(),
         });
     }
-    info
+    Ok(info)
 }
 
-pub fn inflate(bytes: &[u8], buffer: &mut Vec<u8>, start_idx: usize, end_idx: usize) {
-    let _ = libdeflater::Decompressor::new()
-        .deflate_decompress(&bytes[start_idx..end_idx], &mut buffer[0..])
-        .unwrap();
+pub fn inflate(bytes: &[u8], buffer: &mut Vec<u8>, s_idx: usize, e_idx: usize) -> BagResult<usize> {
+    let decompress = libdeflater::Decompressor::new()
+        .deflate_decompress(&bytes[s_idx..e_idx], &mut buffer[0..])?;
+    Ok(decompress)
 }
 
 pub fn should_skip_file(filename: &str) -> bool {
