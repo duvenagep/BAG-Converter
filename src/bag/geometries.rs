@@ -2,13 +2,14 @@ use crate::helpers::deserializers::{deserialize_coords, deserialize_epsg, deseri
 use geo::{Point, Polygon as GeoPolygon};
 use serde::Deserialize;
 
-/// Geometries
+/// Geometries for each different GML type
 #[derive(Deserialize)]
 pub struct Geom {
     #[serde(rename = "$value")]
     pub geometrie: Geometry,
 }
 
+/// Enum of the different types of geometries in XML
 #[derive(Deserialize)]
 pub enum Geometry {
     #[serde(rename = "punt")]
