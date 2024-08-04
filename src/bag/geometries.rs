@@ -45,6 +45,7 @@ pub struct AttrsPoint {
 
 // Polygon Geometries
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct GeometriePoly {
     #[serde(rename = "Polygon")]
     pub attributes: AttrsPoly,

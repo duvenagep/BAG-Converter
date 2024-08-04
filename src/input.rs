@@ -3,6 +3,7 @@ use memmap2::Mmap;
 use std::fs::File;
 use std::io::Cursor;
 use std::ops::Deref;
+use std::path::Path;
 use std::str::from_utf8;
 use zip::ZipArchive;
 
@@ -12,7 +13,6 @@ use zip::ZipArchive;
 /// The Base LVBAG extract is 3.18 GB compressed and > 100 GB Uncompressed
 /// Ideally we want to process this data without needing to fist decompress
 ///
-
 /// The main Input Struct as a safe wrapper around Unsafe Mmap
 #[derive(Debug)]
 pub struct Input {
@@ -28,7 +28,7 @@ pub struct FileInfo {
 }
 
 impl Input {
-    pub fn new(path: &str) -> BagResult<Self> {
+    pub fn new<P: AsRef<Path>>(path: P) -> BagResult<Self> {
         let file = File::open(path)?;
         let mmap = unsafe { Mmap::map(&file)? };
 
@@ -61,25 +61,35 @@ pub fn archive_info(bytes: &[u8]) -> BagResult<Vec<FileInfo>> {
     Ok(info)
 }
 
-pub fn inflate(bytes: &[u8], buffer: &mut Vec<u8>, s_idx: usize, e_idx: usize) -> BagResult<usize> {
+pub fn _inflate(
+    bytes: &[u8],
+    buffer: &mut Vec<u8>,
+    s_idx: usize,
+    e_idx: usize,
+) -> BagResult<usize> {
     let decompress = libdeflater::Decompressor::new()
         .deflate_decompress(&bytes[s_idx..e_idx], &mut buffer[0..])?;
     Ok(decompress)
 }
 
-pub fn should_skip_file(filename: &str) -> bool {
+pub fn _should_skip_file(filename: &str) -> bool {
     let skip_conditions = ["InOnderzoek", "Inactief", "NietBag", "GEM-WPL-RELATIE"];
     skip_conditions
         .iter()
         .any(|condition| filename.contains(condition))
 }
 
+/// The [`IsArchive`] trait and associated `is_archive()` checks whether
+/// any type T that can be [`AsRef`] into `[u8]` is a archive (aka zip).
+///
+/// This is done by checking the first 4 bytes, know as the magic or header bytes.
+/// The magic bytes for a zip archive is equal to `[0x50, 0x4B, 0x03, 0x04]`
 pub trait IsArchive {
-    fn is_zipfile_from_bytes(&self) -> bool;
+    fn _is_archive(&self) -> bool;
 }
 
 impl<T: AsRef<[u8]>> IsArchive for T {
-    fn is_zipfile_from_bytes(&self) -> bool {
+    fn _is_archive(&self) -> bool {
         if self.as_ref().len() >= 4 && self.as_ref()[0..4] == [0x50, 0x4B, 0x03, 0x04] {
             return true;
         }

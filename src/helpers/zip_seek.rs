@@ -2,11 +2,9 @@
 use crate::bag::lib::*;
 use crate::error::BagResult;
 use crate::input::*;
-use anyhow::{bail, Context};
 use csv::Writer;
 use human_bytes::human_bytes;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use rayon::prelude::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Cursor;
@@ -48,11 +46,6 @@ pub fn libdeflate(
     obj: String,
     multi_pb: &Arc<Mutex<MultiProgress>>,
 ) -> BagResult<()> {
-    // let prj = transformer();
-    // let reader = Cursor::new(zip_data);
-
-    // let mut archive = zip::ZipArchive::new(reader).context("unable to parse zip archive")?;
-    // let info = archive_info(&mut archive)?;
     let info = archive_info(zip_data)?;
 
     for file in info {
@@ -65,12 +58,12 @@ pub fn libdeflate(
             let mut inflated = vec![0u8; out_len];
             let inflated_start = 0;
 
-            let written = libdeflater::Decompressor::new().deflate_decompress(
+            let _written = libdeflater::Decompressor::new().deflate_decompress(
                 &zip_data[file.start..file.end],
                 &mut inflated[inflated_start..],
             )?;
 
-            let mut inner_zip = ZipArchive::new(Cursor::new(&inflated))?;
+            let inner_zip = ZipArchive::new(Cursor::new(&inflated))?;
             let inner_info = archive_info(&inflated)?;
             // let inner_info = archive_info(&mut inner_zip)?;
 
@@ -111,7 +104,7 @@ pub fn libdeflate(
                 let bag_stand = BagStand::new(inner_string);
                 match bag_stand {
                     Ok(parsed_bag_stand) => {
-                        let mut csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
+                        let csv_data: Vec<CSVStruct> = parsed_bag_stand.into();
 
                         csv_data
                             .into_iter()
@@ -137,11 +130,11 @@ fn should_skip_file(filename: &str) -> bool {
         .any(|condition| filename.contains(condition))
 }
 
-trait Info {
+trait _Info {
     fn info(&self) -> String;
 }
 
-impl Info for ZipFile<'_> {
+impl _Info for ZipFile<'_> {
     fn info(&self) -> String {
         let info = format!(
             "File Name: {} Size: {} Last Modified: {} Compression: {}",

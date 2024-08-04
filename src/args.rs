@@ -104,7 +104,7 @@ impl ToString for BagObjects {
     }
 }
 
-const HELP_TEMPLATE: &str = r#"
+const _HELP_TEMPLATE: &str = r#"
 {bin} {version}
 {about}
 
