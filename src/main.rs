@@ -1,5 +1,5 @@
 // #![allow(unused)]
-#![warn(clippy::all, clippy::pedantic, clippy::restriction)]
+// #![warn(clippy::all, clippy::pedantic, clippy::restriction)]
 // #![warn(missing_docs)]
 
 mod args;
