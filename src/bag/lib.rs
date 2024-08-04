@@ -4,7 +4,7 @@ use quick_xml::de::from_str;
 use serde;
 use serde::Deserialize;
 
-// Main xml Structure shared by all Enum Variants
+/// Main xml Structure shared by all Enum Variants
 #[derive(Deserialize)]
 pub struct BagStand {
     #[serde(rename = "standBestand")]
@@ -39,8 +39,8 @@ pub struct Stand {
     pub bag_object: BagObject,
 }
 
-// Enum Variants to be deserialised VBO,OPR,WPL,LIG,PND,NUM,STA
-// Quick-xml auto-detects variant option via "$value" parameter
+/// Enum Variants to be deserialised VBO,OPR,WPL,LIG,PND,NUM,STA
+/// Quick-xml auto-detects variant option via "$value" parameter
 #[derive(Deserialize)]
 pub struct BagObject {
     #[serde(rename = "$value")]
@@ -87,22 +87,6 @@ pub enum CSVStruct {
     Sta(Sta),
     Vbo(Vbo),
     Wpl(Wpl),
-}
-
-pub trait Write {
-    fn write_csv(&self, wtr: &mut csv::Writer<std::fs::File>);
-}
-
-impl Write for CSVStruct {
-    fn write_csv(&self, wtr: &mut csv::Writer<std::fs::File>) {
-        match self {
-            Self::Num(data) => {
-                wtr.serialize(data).unwrap();
-                wtr.flush().unwrap();
-            }
-            _ => todo!(),
-        }
-    }
 }
 
 impl CSVStruct {

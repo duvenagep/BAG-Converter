@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::bag::shared::*;
 use serde::{Deserialize, Serialize};
 
@@ -37,60 +35,6 @@ pub struct VerkorteNaamOpenbareRuimte {
 pub struct VerkorteNaam {
     #[serde(rename = "verkorteNaam")]
     pub verkortenaam: String,
-}
-
-pub fn to_hash(opr: OpenbareRuimte) {
-    let mut map = HashMap::new();
-    map.insert("naam", opr.naam);
-    map.insert("type", opr.type_);
-    map.insert("woonplaatsRef", opr.ligtin.woonplaatsref.woonplaatsref);
-    map.insert(
-        "verkorteNaam",
-        match opr.verkortenaamouter {
-            Some(vkn) => vkn.verkortenaam.verkortenaamopenbareruimte.verkortenaam,
-            None => String::new(),
-        },
-    );
-    map.insert("identificatie", opr.identificatie.identificatie);
-    map.insert("status", opr.status);
-    map.insert("geconstateerd", opr.geconstateerd);
-    map.insert("documentDatum", opr.documentdatum);
-    map.insert("documentNummer", opr.documentnummer);
-    map.insert(
-        "voorkomenIdentificatie",
-        opr.voorkomen.voorkomen.voorkomenidentificatie,
-    );
-    map.insert("beginGeldigheid", opr.voorkomen.voorkomen.begingeldigheid);
-    map.insert(
-        "tijdstipRegistratie",
-        opr.voorkomen.voorkomen.tijdstipregistratie,
-    );
-    map.insert(
-        "eindRegistratie",
-        match opr.voorkomen.voorkomen.eindregistratie {
-            Some(er) => er,
-            None => String::new(),
-        },
-    );
-    map.insert(
-        "tijdstipRegistratieLV",
-        opr.voorkomen
-            .voorkomen
-            .beschikbaar_lv
-            .tijdstipregistratie_lv,
-    );
-    map.insert(
-        "tijdstipEindRegistratieLV",
-        match opr
-            .voorkomen
-            .voorkomen
-            .beschikbaar_lv
-            .tijdstipeindregistratie_lv
-        {
-            Some(ter) => ter,
-            None => String::new(),
-        },
-    );
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize, Clone)]
