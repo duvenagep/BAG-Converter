@@ -76,6 +76,8 @@ where
     }
 }
 
+/// Extract [`EPSG`] Projection from OGC CRS string
+/// urn:ogc:def:crs:EPSG::28992
 fn extract_epsg(srs_name: Option<&str>) -> Option<String> {
     if let Some(srs_name) = srs_name {
         if srs_name.starts_with("urn:ogc:def:crs:EPSG::") {

@@ -1,5 +1,4 @@
 use crate::bag::{lig::*, num::*, opr::*, pnd::*, sta::*, vbo::*, wpl::*};
-use crate::schema::Schema;
 use quick_xml::de::from_str;
 
 use serde;
@@ -209,4 +208,8 @@ impl From<BagStand> for Vec<CSVStruct> {
             })
             .collect()
     }
+}
+
+pub trait Schemas {
+    fn to_flat(&self) -> CSVStruct;
 }
