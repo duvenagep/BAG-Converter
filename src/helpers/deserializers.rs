@@ -3,6 +3,7 @@ use proj::Proj;
 use serde::Deserialize;
 use std::cell::RefCell;
 
+// This should be replace with rust 1.80 new OnceCell for lazy instantiations
 thread_local! {
     // Thread-local variable for the Proj transformer
     static TRANSFORMER: RefCell<Proj> = RefCell::new(transformer("EPSG:28992", "EPSG:4326"));
